@@ -1,0 +1,167 @@
+{% raw %}  '<h3>16. Marketing and testimonials</h3><p>The Advisor will not use the Client&rsquo;s name, likeness, or session content in marketing unless the Client opts in below. Consent is optional, is not a condition of booking, and may be withdrawn at any time by written request, subject to materials already published.</p>'+
+  '<h3>17. Data and records</h3><p>Intake responses and this signed Agreement are stored by the Advisor for business records, client care, and optional email or social communication. The Client may request a copy, a correction, or deletion of their record at any time by written request.</p>'+
+  '<h3>18. Governing law and venue</h3><p>This Agreement is governed by the laws of '+law+', without regard to its conflict-of-law rules. The parties agree that the exclusive venue for any dispute shall be the state or federal courts located in '+law+', and each party consents to personal jurisdiction there.</p>'+
+  '<h3>19. Entire agreement and severability</h3><p>This Agreement is the entire agreement between the parties regarding the Services and supersedes any prior discussions or representations. If any provision is found unenforceable, the remaining provisions stay in full force and the unenforceable provision shall be modified to the minimum extent necessary to make it enforceable. This Agreement may be amended only in writing. Failure to enforce a provision is not a waiver of it.</p>'+
+  '<h3>20. Electronic signature</h3><p>The parties agree this Agreement may be executed electronically, that a typed name and drawn signature constitute valid signatures, and that an electronic copy has the same legal force and effect as an original.</p>'+
+  '</div>';
+}
+
+function row(label,val){if(val==null||val===''||(val&&val.length===0))return '';return '<div><b>'+esc(label)+'</b><span>'+esc(Array.isArray(val)?val.join(', '):val)+'</span></div>'}
+function reviewHTML(forPrint){
+  var addr=[d.addr1,d.addr2,d.city,d.state,d.zip,d.country].filter(Boolean).join(', ');
+  var acks=[['a_adult','18 or older, voluntary'],['a_ent','Entertainment / spiritual purposes'],['a_nonpro','Not professional advice'],['a_noguar','No guaranteed outcomes'],['a_risk','Assumes risk, releases liability'],['a_rec','No recording without consent'],['a_terms','Payment &amp; cancellation terms'],['a_esign','E-signature consent']].filter(function(a){return d[a[0]]}).map(function(a){return a[1]}).join(' &middot; ');
+  var h='<div class="cyd-review">'+
+    row('Full legal name',d.name)+row('Goes by',d.preferred)+row('Email',d.email)+row('Phone',d.phone)+row('Social',d.social)+row('Found via',d.found)+row('Mailing address',addr)+
+    row('Booking',d.services)+row('Birth data',[d.bdate,d.btime,d.bplace].filter(Boolean).join(' · '))+row('Experience',d.exp)+row('Intention',d.intent)+row('Preferred dates',d.dates)+row('Budget',d.budget)+
+    row('Health notes',d.health)+row('Under professional care',d.support)+
+    (acks?'<div><b>Acknowledged</b><span>'+acks+'</span></div>':'')+
+    row('Media release',d.a_media?'Granted':'Declined')+
+    row('Newsletter',d.a_news?'Opted in':'Declined')+
+    row('Signed name',d.signName)+row('Date signed',d.signDate)+
+    (forPrint&&d.sig?'<div><b>Signature</b><span><img src="'+d.sig+'" alt="signature" style="max-height:80px"></span></div>':'')+
+  '</div>';
+  return (forPrint?'<h3 style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:24px 0 8px">Client record</h3>':'<div style="margin-top:32px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Review your answers</div>')+h;
+}
+
+function collect(){
+  body.querySelectorAll('input[id^=f_],select[id^=f_],textarea[id^=f_]').forEach(function(el){d[el.id.slice(2)]=el.value});
+  var svc=body.querySelector('#svc');
+  if(svc)d.services=Array.prototype.map.call(svc.querySelectorAll('input:checked'),function(i){return i.value});
+  var sup=body.querySelector('input[name=support]:checked');if(sup)d.support=sup.value;
+  body.querySelectorAll('input[data-ack]').forEach(function(el){d[el.dataset.ack]=el.checked});
+  // the single combined acknowledgment records each individual provision it covers,
+  // so exported records and printed agreements stay itemised and defensible
+  if('a_all' in d)ACK_COVERS.forEach(function(k){d[k]=!!d.a_all});
+  saveDraft();
+}
+
+function flag(id,msg){var f=body.querySelector('[data-f="'+id+'"]');if(!f)return;f.classList.add('bad');if(!f.querySelector('.err')){var e=document.createElement('div');e.className='err';e.textContent=msg;f.appendChild(e)}}
+function validate(){
+  body.querySelectorAll('.bad').forEach(function(f){f.classList.remove('bad')});
+  body.querySelectorAll('.err').forEach(function(e){e.remove()});
+  var bad=[];
+  function need(id,msg){if(!String(d[id]||'').trim()){flag(id,msg);bad.push(id)}}
+  if(step===0){need('name','Please enter your full legal name.');need('phone','Please enter a phone number.');
+    if(!String(d.email||'').trim()){flag('email','Please enter your email.');bad.push('email')}
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim())){flag('email','That email does not look right.');bad.push('email')}
+    need('found','Please let me know how you found me.');}
+  if(step===1){if(!(d.services||[]).length){flag('services','Please choose at least one service.');bad.push('services')}
+    need('bdate','Please enter your birth date.');need('intent','Please share your intention or question.');}
+  if(step===2&&TW.requireHealth){need('health','Please add a note, or write “none”.');}
+  if(step===3){if(!d.a_all){flag('a_all','Please confirm you have read and accept the agreement.');bad.push('a_all')}}
+  if(step===4){need('signName','Please type your full legal name.');need('signDate','Please confirm the date.');
+    if(String(d.signName||'').trim()&&String(d.name||'').trim()&&d.signName.trim().toLowerCase()!==d.name.trim().toLowerCase())flag('signName','Heads up: this does not match the legal name you gave in step 1.');
+    if(!d.sig){flag('sig','Please draw your signature.');bad.push('sig')}}
+  if(bad.length){var el=body.querySelector('.bad');if(el)el.querySelector('input,select,textarea')&&el.querySelector('input,select,textarea').focus()}
+  return bad.length===0;
+}
+
+function submitRecord(){
+  var rec=JSON.parse(JSON.stringify(d));
+  rec.id='CYD-'+Date.now().toString(36).toUpperCase();
+  rec.submittedAt=new Date().toISOString();
+  rec.agreementVersion='1.0';
+  rec.terms=JSON.parse(JSON.stringify(terms));
+  rec.source=MODE;
+  if(MODE==='advisor'){var all=load();all.unshift(rec);save(all)}
+  d=rec;
+  dl('cyd-intake-'+slug(d.name)+'-'+rec.id+'.json',JSON.stringify(rec,null,2));
+  if(MODE==='public')deliver(rec);
+  try{localStorage.setItem('cyd_booking_prefill',JSON.stringify({name:rec.name,email:rec.email,phone:rec.phone,service:(rec.services||[])[0]||''}))}catch(e){}
+  try{localStorage.removeItem(DKEY)}catch(e){}
+  step=5;render();
+}
+
+/* public mode only: get the completed intake to the advisor */
+function deliver(rec){
+  if(SUBMIT_ENDPOINT){
+    try{
+      fetch(SUBMIT_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status)})
+        .catch(function(){d.deliveryFailed=true;render()});
+    }catch(e){d.deliveryFailed=true}
+  }
+}
+function bookingLink(){
+  var q=[];
+  if(d.name)q.push('name='+encodeURIComponent(d.name));
+  if(d.email)q.push('email='+encodeURIComponent(d.email));
+  if(d.phone)q.push('phone='+encodeURIComponent(d.phone));
+  return BOOKING_URL+(q.length?'?'+q.join('&'):'');
+}
+function mailtoLink(rec){
+  var L=['New client intake — '+(rec.name||''),'','Submitted: '+new Date(rec.submittedAt).toLocaleString(),'Record: '+rec.id,'',
+    'Name: '+(rec.name||''),'Email: '+(rec.email||''),'Phone: '+(rec.phone||''),'Social: '+(rec.social||''),'Found via: '+(rec.found||''),'',
+    'Booking: '+((rec.services||[]).join('; ')),'Birth data: '+[rec.bdate,rec.btime,rec.bplace].filter(Boolean).join(' / '),'Preferred: '+(rec.dates||''),'',
+    'Intention: '+(rec.intent||''),'','Agreement accepted and signed by '+(rec.signName||'')+' on '+(rec.signDate||'')+'.',
+    'Newsletter: '+(rec.a_news?'opted in':'declined')+'. Media release: '+(rec.a_media?'granted':'declined')+'.','',
+    'The full record, including the signature image, is in the JSON file downloaded with this intake — please attach it.'];
+  return 'mailto:'+ADVISOR_EMAIL+'?subject='+encodeURIComponent('New client intake — '+(rec.name||''))+'&body='+encodeURIComponent(L.join('\n'));
+}
+
+function initPad(){
+  var c=body.querySelector('#sigpad');if(!c)return;
+  var ratio=window.devicePixelRatio||1;
+  var w=c.getBoundingClientRect().width||600;
+  c.width=w*ratio;c.height=170*ratio;
+  var ctx=c.getContext('2d');ctx.scale(ratio,ratio);ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#0a0a0a';
+  if(d.sig){var img=new Image();img.onload=function(){ctx.drawImage(img,0,0,w,170)};img.src=d.sig}
+  var drawing=false;
+  function pos(e){var r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+  c.addEventListener('pointerdown',function(e){drawing=true;sigDirty=true;c.setPointerCapture(e.pointerId);var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault()});
+  c.addEventListener('pointermove',function(e){if(!drawing)return;var p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()});
+  function end(){if(!drawing)return;drawing=false;if(sigDirty){d.sig=c.toDataURL('image/png');saveDraft()}}
+  c.addEventListener('pointerup',end);c.addEventListener('pointerleave',end);c.addEventListener('pointercancel',end);
+  body.querySelector('#sigclear').addEventListener('click',function(){ctx.clearRect(0,0,c.width,c.height);d.sig='';sigDirty=false;saveDraft()});
+}
+
+function wire(){
+  body.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){
+    collect();var dir=+b.dataset.go;
+    if(dir>0&&!validate())return;
+    step=Math.max(0,Math.min(5,step+dir));render();
+  })});
+  body.querySelectorAll('.cyd-pick input,.cyd-ack input').forEach(function(i){i.addEventListener('change',function(){
+    if(i.type==='radio'){var g=i.closest('.cyd-picks');if(g)g.querySelectorAll('.cyd-pick').forEach(function(p){p.classList.remove('sel')})}
+    i.closest('.cyd-pick,.cyd-ack').classList.toggle('sel',i.checked);collect();
+  })});
+  body.querySelectorAll('input,select,textarea').forEach(function(el){el.addEventListener('change',collect)});
+  if(step===4)initPad();
+  if(step===3){
+    var legal=body.querySelector('.cyd-legal'),next=body.querySelector('#tosign'),fill=body.querySelector('#readfill'),hint=body.querySelector('#readhint');
+    var read=!!d.agreementRead;
+    function gate(){
+      next.disabled=!read;
+      hint.textContent=read?'':'Scroll to the end of the agreement to continue.';
+    }
+    function onScroll(){
+      var max=legal.scrollHeight-legal.clientHeight;
+      var pct=max<=2?1:Math.min(1,(legal.scrollTop+2)/max);
+      fill.style.width=(pct*100).toFixed(1)+'%';
+      if(pct>=0.995&&!read){read=true;d.agreementRead=true;saveDraft();gate()}
+    }
+    legal.addEventListener('scroll',onScroll);
+    gate();onScroll();
+  }
+  var s=body.querySelector('#submit');if(s)s.addEventListener('click',function(){collect();if(validate())submitRecord()});
+  var p=body.querySelector('#print');if(p)p.addEventListener('click',function(){window.print()});
+  var dr=body.querySelector('#dlrec');if(dr)dr.addEventListener('click',function(){dl('cyd-intake-'+slug(d.name)+'-'+(d.id||'copy')+'.json',JSON.stringify(d,null,2))});
+  var ag=body.querySelector('#again');if(ag)ag.addEventListener('click',function(){d={};step=0;sigDirty=false;render()});
+  if(step===4&&!d.signDate){var t=new Date(),iso=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');var f=body.querySelector('#f_signDate');if(f){f.value=iso;d.signDate=iso}}
+}
+
+/* ---- advisor records panel (advisor build only) ---- */
+var adm=$('#cyd-admin');
+function on(sel,ev,fn){var e=$(sel);if(e)e.addEventListener(ev,fn)}
+if(MODE!=='advisor'){
+  // a client's browser must never hold other clients' records
+  [adm,$('#cyd-advisor'),$('#cyd-file')].forEach(function(e){if(e)e.remove()});
+  var fs=document.querySelector('.cyd-foot span');
+  if(fs)fs.textContent='Your information is sent only to Choose Your Destiny. Nothing is stored on this site.';
+}
+function renderRecords(){
+  var all=load();$('#cyd-count').textContent=all.length+' record'+(all.length===1?'':'s');
+  if(!all.length){$('#cyd-records').innerHTML='<div class="cyd-empty">No submissions saved on this device yet.</div>';return}
+  $('#cyd-records').innerHTML='<table class="cyd-tbl"><thead><tr><th>Submitted</th><th>Client</th><th>Contact</th><th>Booking</th><th></th></tr></thead><tbody>'+
+  all.map(function(r,i){return '<tr><td>'+esc(new Date(r.submittedAt).toLocaleString())+'<div style="color:#3a3a3a;font-size:11px">'+esc(r.id)+'</div></td>'+
+{% endraw %}

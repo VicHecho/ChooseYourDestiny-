@@ -1,0 +1,139 @@
+{%- comment -%}
+  Choose Your Destiny — Client intake + consultation agreement
+  Paste this whole file into a Shopify page via a Custom Liquid section,
+  or save it as a snippet and render it with {% render 'cyd-intake' %}.
+
+  Everything is scoped to #cyd-intake — no unscoped rules, so your theme is untouched.
+  No external fonts, scripts, or stylesheets.
+
+  Before going live, edit the CONFIG block near the top of the <script>:
+    ADVISOR_EMAIL   — already set to contact@chooseyourdestiny.us
+    SUBMIT_ENDPOINT — leave '' for the email fallback, or set a URL that accepts a JSON POST
+    INTAKE_URL / BOOKING_URL — where the companion page lives. This file expects
+                              it at /pages/2027-bookings; change it if your Shopify
+                              page handle differs.
+{%- endcomment -%}
+
+{% raw %}
+<style>
+/* All styles scoped to #cyd-intake so this can be injected into a Shopify theme without collisions. Token values mirror the CYD design system; inlined so the form works with no network. */
+#cyd-intake{--ink-900:#0a0a0a;--ink-700:#1c1c1c;--ink-500:#3a3a3a;--paper-000:#fff;--paper-050:#faf9f7;--paper-100:#efeee9;--gold-300:#ffe774;--gold-500:#f0c93e;--gold-700:#c9a11f;--indigo-300:#5a4de0;--indigo-500:#2c1fa8;--indigo-700:#170f5c;--blue-500:#2f6fd1;--violet-500:#5c3a8f;--verdant-500:#5fa858;--magenta-500:#d94fb8;--font-serif:'Cormorant Garamond',Georgia,serif;--font-sans:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sp3:12px;--sp4:16px;--sp5:24px;--sp6:32px;--sp7:48px;--bw:2px;--shadow-lift:4px 4px 0 var(--ink-900);box-sizing:border-box;font-family:var(--font-sans);color:var(--ink-900);background:var(--paper-000);-webkit-font-smoothing:antialiased;line-height:1.5}
+#cyd-intake *,#cyd-intake *::before,#cyd-intake *::after{box-sizing:border-box}
+#cyd-intake h1,#cyd-intake h2,#cyd-intake h3,#cyd-intake h4,#cyd-intake p,#cyd-intake ol,#cyd-intake ul,#cyd-intake li{margin:0;padding:0}
+#cyd-intake a{color:var(--indigo-500);text-decoration:underline}
+#cyd-intake a:hover{color:var(--indigo-700)}
+#cyd-intake button{font-family:inherit}
+.cyd-blocks{display:flex;height:10px}
+.cyd-blocks>i{flex:1}
+.cyd-head{background:var(--ink-900);color:var(--paper-000);padding:var(--sp5) var(--sp5) var(--sp4)}
+.cyd-head-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp5);flex-wrap:wrap}
+.cyd-lock{display:flex;align-items:center;gap:14px;min-width:0;flex-wrap:wrap}
+.cyd-lock img{height:64px;width:auto;flex:none}
+.cyd-lock .wm{width:240px;height:auto;max-width:100%}
+.cyd-kicker{font-family:'Lora',Georgia,serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-500);font-weight:800}
+.cyd-wrap{max-width:1200px;margin:0 auto;padding:var(--sp6) var(--sp5) var(--sp7)}
+.cyd-panel{background:var(--paper-000);border:var(--bw) solid var(--ink-900);box-shadow:var(--shadow-lift);padding:var(--sp6)}
+.cyd-steps{display:flex;gap:2px;margin-bottom:var(--sp6);flex-wrap:wrap}
+.cyd-steps>div{flex:1 1 90px;min-width:0;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--paper-100);color:var(--ink-500);border-bottom:4px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cyd-steps>div.on{background:var(--ink-900);color:var(--paper-000)}
+.cyd-steps>div.done{background:var(--paper-050);color:var(--ink-900)}
+.cyd-steps>div:nth-child(1){border-bottom-color:var(--violet-500)}
+.cyd-steps>div:nth-child(2){border-bottom-color:var(--blue-500)}
+.cyd-steps>div:nth-child(3){border-bottom-color:var(--verdant-500)}
+.cyd-steps>div:nth-child(4){border-bottom-color:var(--gold-500)}
+.cyd-steps>div:nth-child(5){border-bottom-color:var(--magenta-500)}
+.cyd-h{font-family:var(--font-serif);font-size:34px;line-height:1.1;font-weight:600;margin-bottom:8px}
+.cyd-sub{color:var(--ink-500);font-size:15px;max-width:60ch;text-wrap:pretty}
+.cyd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp4);margin-top:var(--sp6)}
+.cyd-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cyd-f.full{grid-column:1/-1}
+.cyd-f>label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.cyd-f .hint{font-size:12px;color:var(--ink-500);font-weight:400;letter-spacing:0;text-transform:none}
+.cyd-f input[type=text],.cyd-f input[type=email],.cyd-f input[type=tel],.cyd-f input[type=date],.cyd-f input[type=time],.cyd-f select,.cyd-f textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:11px 12px;border:var(--bw) solid var(--ink-900);border-radius:0;background:var(--paper-000);color:var(--ink-900)}
+.cyd-f textarea{min-height:96px;resize:vertical;line-height:1.5}
+.cyd-f input:focus,.cyd-f select:focus,.cyd-f textarea:focus{outline:3px solid var(--indigo-300);outline-offset:1px}
+.cyd-f .err{font-size:12px;color:#b3123c;font-weight:600}
+.cyd-f.bad input,.cyd-f.bad select,.cyd-f.bad textarea{border-color:#b3123c}
+.req{color:var(--magenta-500)}
+.cyd-picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cyd-pick{display:flex;align-items:flex-start;gap:10px;border:var(--bw) solid var(--ink-900);padding:12px;cursor:pointer;background:var(--paper-000);transition:background 120ms cubic-bezier(.2,.8,.2,1)}
+.cyd-pick:hover{background:var(--paper-050)}
+.cyd-pick input{margin:2px 0 0;flex:none;width:18px;height:18px;accent-color:var(--indigo-500)}
+.cyd-pick span{font-size:14px;font-weight:600;line-height:1.35}
+.cyd-pick.sel{background:var(--gold-300)}
+.cyd-note{border-left:6px solid var(--blue-500);background:var(--paper-050);padding:var(--sp4);font-size:13px;color:var(--ink-700);margin-top:var(--sp5)}
+.cyd-actions{display:flex;gap:var(--sp3);margin-top:var(--sp6);flex-wrap:wrap;align-items:center}
+.cyd-btn{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 26px;border:var(--bw) solid var(--ink-900);border-radius:0;cursor:pointer;background:var(--gold-500);color:var(--ink-900);box-shadow:var(--shadow-lift);transition:transform 120ms cubic-bezier(.2,.8,.2,1),box-shadow 120ms cubic-bezier(.2,.8,.2,1),background 120ms}
+.cyd-btn:hover{background:var(--gold-300)}
+.cyd-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink-900)}
+.cyd-btn.dark{background:var(--ink-900);color:var(--paper-000)}
+.cyd-btn.dark:hover{background:var(--indigo-700)}
+.cyd-btn.ghost{background:transparent;box-shadow:none}
+.cyd-btn.ghost:hover{background:var(--paper-100)}
+.cyd-btn.sm{padding:9px 16px;font-size:12px;box-shadow:2px 2px 0 var(--ink-900)}
+.cyd-btn:disabled{opacity:.4;cursor:not-allowed}
+.cyd-spacer{flex:1}
+.cyd-legal{border:var(--bw) solid var(--ink-900);background:var(--paper-050);padding:var(--sp5);max-height:420px;overflow-y:auto;margin-top:var(--sp5)}
+.cyd-legal h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:var(--sp5) 0 6px;padding-top:var(--sp4);border-top:1px solid var(--paper-100)}
+.cyd-legal h3:first-child{margin-top:0;padding-top:0;border-top:0}
+.cyd-legal p{font-size:13.5px;line-height:1.65;color:var(--ink-700);margin-bottom:8px;text-wrap:pretty}
+.cyd-legal .fill{background:var(--gold-300);padding:1px 5px;font-weight:600;color:var(--ink-900)}
+.cyd-acks{display:flex;flex-direction:column;gap:10px;margin-top:var(--sp5)}
+.cyd-readbar{height:6px;background:var(--paper-100);margin-top:var(--sp3);border:1px solid var(--ink-900)}
+.cyd-readfill{height:100%;width:0;background:var(--verdant-500);transition:width 120ms linear}
+.cyd-ack{display:flex;align-items:flex-start;gap:12px;border:var(--bw) solid var(--ink-900);padding:13px;font-size:13.5px;line-height:1.45;cursor:pointer;background:var(--paper-000)}
+.cyd-ack:hover{background:var(--paper-050)}
+.cyd-ack input{margin:1px 0 0;flex:none;width:18px;height:18px;accent-color:var(--indigo-500)}
+.cyd-ack.sel{background:var(--paper-050);border-color:var(--verdant-500);box-shadow:inset 4px 0 0 var(--verdant-500)}
+.cyd-ack.opt{border-style:dashed}
+.cyd-sigwrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp5);margin-top:var(--sp6)}
+.cyd-canvas{border:var(--bw) solid var(--ink-900);background:var(--paper-000);width:100%;height:170px;touch-action:none;cursor:crosshair;display:block}
+.cyd-typed{font-family:var(--font-serif);font-size:26px!important;font-style:italic}
+.cyd-review{margin-top:var(--sp5);border:var(--bw) solid var(--ink-900)}
+.cyd-review div{display:grid;grid-template-columns:200px 1fr;gap:var(--sp4);padding:10px var(--sp4);font-size:13.5px;border-bottom:1px solid var(--paper-100)}
+.cyd-review div:last-child{border-bottom:0}
+.cyd-review dt,.cyd-review b{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);align-self:center}
+.cyd-review span{word-break:break-word;white-space:pre-wrap}
+.cyd-done{text-align:center;padding:var(--sp6) 0}
+.cyd-done .mark{font-family:var(--font-serif);font-size:56px;line-height:1;color:var(--verdant-500);margin-bottom:var(--sp4)}
+.cyd-admin{max-width:1200px;margin:0 auto var(--sp7);padding:0 var(--sp5)}
+.cyd-admin-panel{border:var(--bw) solid var(--ink-900);background:var(--paper-000);box-shadow:var(--shadow-lift)}
+.cyd-admin-bar{background:var(--ink-900);color:var(--paper-000);padding:var(--sp4);display:flex;gap:var(--sp3);align-items:center;flex-wrap:wrap}
+.cyd-admin-bar b{font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.cyd-admin-bar .cyd-btn{box-shadow:none;border-color:var(--paper-000);color:var(--paper-000);background:transparent}
+.cyd-admin-bar .cyd-btn:hover{background:var(--indigo-700)}
+.cyd-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cyd-tbl th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px var(--sp4);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)}
+.cyd-tbl td{padding:10px var(--sp4);border-bottom:1px solid var(--paper-100);vertical-align:top}
+.cyd-tbl tr:hover td{background:var(--paper-050)}
+.cyd-empty{padding:var(--sp6);text-align:center;color:var(--ink-500);font-size:14px}
+.cyd-foot{max-width:1200px;margin:0 auto;padding:0 var(--sp5) var(--sp6);font-size:12px;color:var(--ink-500);display:flex;gap:var(--sp4);justify-content:space-between;flex-wrap:wrap}
+.cyd-foot button{background:none;border:0;color:var(--ink-500);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+.cyd-foot button:hover{color:var(--ink-900)}
+.cyd-hide{display:none!important}
+#tw{position:fixed;right:16px;bottom:16px;width:240px;max-height:calc(100vh - 32px);overflow-y:auto;background:#fff;border:2px solid #0a0a0a;box-shadow:4px 4px 0 #0a0a0a;font:400 12px/1.4 'Inter',-apple-system,sans-serif;color:#0a0a0a;z-index:99999;display:none}
+#tw.on{display:block}
+#tw .hd{display:flex;align-items:center;justify-content:space-between;background:#0a0a0a;color:#fff;padding:9px 12px;font-weight:700;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+#tw .hd button{background:none;border:0;color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0 2px}
+#tw .bd{padding:12px}
+#tw .sec{font-weight:700;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#3a3a3a;margin:14px 0 8px;padding-top:10px;border-top:1px solid #efeee9}
+#tw .sec:first-child{margin-top:0;padding-top:0;border-top:0}
+#tw .row{margin-bottom:11px}
+#tw .sw{display:flex;gap:6px}
+#tw .sw button{width:30px;height:30px;border:2px solid #0a0a0a;cursor:pointer;padding:0;border-radius:0}
+#tw .sw button.sel{outline:2px solid #2c1fa8;outline-offset:2px}
+#tw .tg{display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:11px;cursor:pointer}
+#tw .tg input{width:16px;height:16px;accent-color:#2c1fa8;margin:0}
+@media(max-width:700px){.cyd-grid,.cyd-picks,.cyd-sigwrap{grid-template-columns:minmax(0,1fr)}.cyd-panel{padding:var(--sp5)}.cyd-h{font-size:27px}.cyd-review div{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media print{.cyd-noprint{display:none!important}.cyd-panel{border:0;box-shadow:none;padding:0}.cyd-legal{max-height:none;overflow:visible;border:0;background:#fff;padding:0}.cyd-legal p{font-size:11pt}.cyd-review{break-inside:avoid}}
+</style>
+
+<div id="cyd-intake">
+<div class="cyd-blocks"><i style="background:var(--violet-500)"></i><i style="background:var(--blue-500)"></i><i style="background:var(--verdant-500)"></i><i style="background:var(--gold-500)"></i></div>
+<header class="cyd-head"><div class="cyd-head-in">
+<div class="cyd-lock">{% endraw %}{%- if settings.logo != blank -%}<img class="wm" src="{{ settings.logo | image_url: width: 800 }}" alt="Choose Your Destiny">{%- else -%}<span class="wm" style="font-size:22px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff">{{ shop.name }}</span>{%- endif -%}{% raw %}</div>
+<div style="text-align:right"><div class="cyd-kicker">New Client Intake</div><div style="font-size:13px;color:#bdbdbd;margin-top:3px"></div></div>
+</div></header>
+
+<div class="cyd-wrap"><div class="cyd-panel">
+{% endraw %}

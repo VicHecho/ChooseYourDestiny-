@@ -1,0 +1,125 @@
+{% raw %}<div class="cyd-steps cyd-noprint" id="cyd-steps"></div>
+<div id="cyd-body"></div>
+</div></div>
+
+<div class="cyd-admin cyd-hide cyd-noprint" id="cyd-admin"><div class="cyd-admin-panel">
+<div class="cyd-admin-bar"><b>Client Records</b><span id="cyd-count" style="font-size:12px;color:#bdbdbd"></span><span class="cyd-spacer"></span>
+<button class="cyd-btn sm" id="cyd-csv">Export CSV</button><button class="cyd-btn sm" id="cyd-db">Save Database File</button><button class="cyd-btn sm" id="cyd-json">Export All JSON</button><button class="cyd-btn sm" id="cyd-import">Import JSON</button><button class="cyd-btn sm" id="cyd-terms">My Terms</button><button class="cyd-btn sm" id="cyd-close">Close</button></div>
+<div id="cyd-settings" class="cyd-hide" style="padding:var(--sp5);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)">
+<p style="font-size:13px;color:var(--ink-500);margin-bottom:16px;max-width:60ch">Fill these in once. They are saved on this device and inserted into sections 7, 12, 13, and 14 of every agreement a client signs. Until you fill them in, those sections show a highlighted placeholder.</p>
+<div class="cyd-grid" style="margin-top:0">
+<div class="cyd-f full"><label for="s_payTerms">§12 Payment, deposits, and refunds</label><textarea id="s_payTerms" placeholder="e.g. A 50% non-refundable deposit is due at booking to reserve the session. The remaining balance is due at or before the start of the session. All sales of digital audio and downloadable materials are final and non-refundable once delivered."></textarea></div>
+<div class="cyd-f full"><label for="s_cancelTerms">§13 Cancellation and no-shows</label><textarea id="s_cancelTerms" placeholder="e.g. Cancellations made more than 24 hours before the session forfeit the deposit but incur no further charge. Cancellations inside 24 hours, or failure to appear within 15 minutes of the start time, are treated as a completed session and the full fee is owed."></textarea></div>
+<div class="cyd-f full"><label for="s_rescheduleTerms">§14 Rescheduling</label><textarea id="s_rescheduleTerms" placeholder="e.g. A session may be rescheduled once at no charge with at least 48 hours written notice. Later or repeat reschedules are at the Advisor's discretion and may require a new deposit."></textarea></div>
+<div class="cyd-f full"><label for="s_liabilityCap">§7 Liability cap wording</label><input id="s_liabilityCap" type="text" placeholder="the total amount the Client actually paid for the service giving rise to the claim"></div>
+<div class="cyd-f full"><label for="s_jurisdiction">§18 Governing law</label><input id="s_jurisdiction" type="text"></div>
+</div>
+<div class="cyd-actions"><button class="cyd-btn" id="cyd-save-terms">Save my terms</button><span id="cyd-saved" style="font-size:12px;color:var(--verdant-500);font-weight:700"></span></div>
+</div>
+<div id="cyd-records"></div>
+</div></div>
+
+<div class="cyd-foot cyd-noprint"><span>All information is stored only on this device. Nothing is transmitted.</span><button id="cyd-advisor">Advisor access</button></div>
+<input type="file" id="cyd-file" accept=".json" style="display:none">
+</div>
+<div id="tw" class="cyd-noprint"><div class="hd"><span>Tweaks</span><button id="tw-x" title="Close">&times;</button></div><div class="bd" id="tw-bd"></div></div>
+
+<script>
+(function(){
+var KEY='cyd_intake_records_v1',DKEY='cyd_intake_draft_v1',SKEY='cyd_intake_terms_v1';
+
+/* ===== BUILD MODE =====================================================
+   'advisor' — your own tablet or laptop. Keeps a local records database,
+               exposes the Advisor panel, exports CSV / JSON / database file.
+   'public'  — the Shopify embed. No records database and no Advisor panel,
+               because a client's browser must never hold other clients'
+               data. On submit the client gets their own copy and the intake
+               is delivered to you (POST if SUBMIT_ENDPOINT is set, otherwise
+               a prefilled email).
+   shopify.html is this same file with MODE flipped to 'public'.
+   ===================================================================== */
+var MODE='public';
+var ADVISOR_EMAIL='contact@chooseyourdestiny.us';
+var SUBMIT_ENDPOINT='';
+var BOOKING_URL='/pages/2027-bookings';
+var TERMFIELDS=['payTerms','cancelTerms','rescheduleTerms','liabilityCap','jurisdiction'];
+var terms={
+  jurisdiction:'the State of North Carolina',
+  payTerms:'All sales are final. Payment reserves a specific window of the Advisor\u2019s time and attention, and that time is held for the Client alone, so fees are non-refundable once a session is booked. Where a session is not attended, any payment already made is received and retained as a donation toward the Advisor\u2019s continued practice rather than as a fee for services rendered. This exchange runs in both directions: if a Client books a thirty minute session and the work calls for two hours, the additional time is donated by the Advisor at no further charge. This practice is holistic and community oriented, and both parties agree to meet each other in that spirit of mutual generosity rather than strict accounting.',
+  cancelTerms:'The Client is asked to give as much notice as possible when they cannot attend. In the case of a no call, no show \u2014 where the Client neither appears nor makes contact \u2014 the reserved time cannot be offered to anyone else, and any payment made is retained as a donation as described in Section 12. No refund is owed. The Advisor will still make a good faith effort to find the Client another window, as set out in Section 14.',
+  rescheduleTerms:'Life happens, and a missed appointment is not the end of the working relationship. Where a session is missed for any reason, the Advisor will do their best to work with the Client to reschedule within thirty days or less, subject to availability. The Client is encouraged to reach out as soon as they are able so a new window can be held for them.'
+};
+function loadTerms(){try{var v=JSON.parse(localStorage.getItem(SKEY));if(v)for(var k in v)if(v[k])terms[k]=v[k]}catch(e){}}
+var SERVICES=['Spiritual Advice (divination, i.e. rune / tarot readings)','Sleep Subliminals (custom 8 hr video program)','Energy or wellness coaching (ongoing, specific or deep work)','Hack The Matrix (class teaching how to use -The Metaphysical Dayplanner- along with the Grabovoi numerology codes and the visual concentration exercises one must execute from their souls seat by way one the so-called Imagination)'];
+var FOUND=['Instagram','TikTok','YouTube','Referral from a friend','Event or pop-up','Shopify store','Other'];
+var BUDGET=['Under $100','$100 – $250','$250 – $500','$500 – $1,000','$1,000+','Not sure yet'];
+var EXP=['This is my first time','I have had a few sessions','I work with this regularly','I practice myself'];
+var ACK_COVERS=['a_adult','a_ent','a_nonpro','a_noguar','a_risk','a_rec','a_terms','a_esign'];
+var step=0,d={},sigDirty=false;
+var TW = /*EDITMODE-BEGIN*/{
+  "accent": "#f0c93e",
+  "showBlocks": true,
+  "showBudget": true,
+  "requireHealth": false
+}/*EDITMODE-END*/;
+var $=function(s,r){return (r||document).querySelector(s)};
+var body=$('#cyd-body'),stepsEl=$('#cyd-steps');
+var STEPS=['Contact','Session','Wellbeing','Agreement','Sign'];
+
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
+function save(r){try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){alert('Could not save to this device: '+e.message)}}
+function saveDraft(){try{localStorage.setItem(DKEY,JSON.stringify({step:step,d:d}))}catch(e){}}
+function loadDraft(){try{var v=JSON.parse(localStorage.getItem(DKEY));if(v&&v.d){d=v.d;step=v.step||0}}catch(e){}}
+function dl(name,text,type){var b=new Blob([text],{type:type||'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000)}
+function slug(s){return String(s||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'client'}
+
+function opts(list,val){return list.map(function(o){return '<option value="'+esc(o)+'"'+(val===o?' selected':'')+'>'+esc(o)+'</option>'}).join('')}
+function field(id,label,html,hint,req){return '<div class="cyd-f" data-f="'+id+'"><label for="f_'+id+'">'+esc(label)+(req?' <span class="req">*</span>':'')+(hint?'<div class="hint">'+hint+'</div>':'')+'</label>'+html+'</div>'}
+function txt(id,type,ph){return '<input id="f_'+id+'" type="'+(type||'text')+'" value="'+esc(d[id])+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
+function area(id,ph){return '<textarea id="f_'+id+'" placeholder="'+esc(ph||'')+'">'+esc(d[id])+'</textarea>'}
+function sel(id,list,ph){return '<select id="f_'+id+'"><option value="">'+esc(ph||'Select…')+'</option>'+opts(list,d[id])+'</select>'}
+
+function renderSteps(){stepsEl.innerHTML=STEPS.map(function(s,i){return '<div class="'+(i===step?'on':(i<step?'done':''))+'">'+(i+1)+'. '+s+'</div>'}).join('')}
+
+function render(){
+  renderSteps();
+  if(step===0)body.innerHTML=
+    '<h2 class="cyd-h">Let’s begin with you.</h2><p class="cyd-sub">This intake tells me who I am working with and how to reach you. Fields marked with an asterisk are required.</p>'+
+    '<div class="cyd-grid">'+
+    field('name','Full legal name',txt('name','text','Your Name Here'),'As it should appear on the agreement.',1)+
+    field('preferred','Name you go by',txt('preferred'),'',0)+
+    field('email','Email',txt('email','email','you@example.com'),'',1)+
+    field('phone','Phone',txt('phone','tel','(555) 555-5555'),'',1)+
+    field('social','Instagram / TikTok handle',txt('social','text','@handle'),'',0)+
+    field('found','How did you find me?',sel('found',FOUND),'',1)+
+    field('addr1','Mailing address',txt('addr1','text','Street address'),'Used only for shipped items and records.',0)+
+    field('addr2','Apt / unit',txt('addr2'),'',0)+
+    field('city','City',txt('city'),'',0)+
+    field('state','State / region',txt('state'),'',0)+
+    field('zip','Postal code',txt('zip'),'',0)+
+    field('country','Country',txt('country'),'',0)+
+    '</div>'+
+    '<div class="cyd-acks">'+
+    ack('a_news','<b>Optional.</b> Yes, email me occasional updates, new drops, and subliminal releases from Choose Your Destiny. I can unsubscribe at any time, and my address will not be sold or shared.',1)+
+    '</div>'+
+    '<div class="cyd-actions"><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===1)body.innerHTML=
+    '<h2 class="cyd-h">Your session.</h2><p class="cyd-sub">Birth data is used for chart and records work. If you do not know your exact birth time, leave it blank and note what you do know.</p>'+
+    '<p class="cyd-sub" style="margin-top:10px"><b>Sessions are $1 a minute right now.</b> 30 minutes $30, 60 minutes $60, 90 minutes $90, 120 minutes $120 \u2014 regularly $50, $100, $150 and $200. Reduced rates through January 1, 2027.</p>'+
+    field('services','What are you booking?','<div class="cyd-picks" id="svc">'+SERVICES.map(function(s){var on=(d.services||[]).indexOf(s)>-1;return '<label class="cyd-pick'+(on?' sel':'')+'"><input type="checkbox" value="'+esc(s)+'"'+(on?' checked':'')+'><span>'+esc(s)+'</span></label>'}).join('')+'</div>','',1).replace('<label for="f_services">','<label>')+
+    '<div class="cyd-grid">'+
+    field('bdate','Birth date',txt('bdate','date'),'',1)+
+    field('btime','Birth time',txt('btime','time'),'Leave blank if unknown.',0)+
+    field('bplace','Birth city and country',txt('bplace','text','Charlotte, USA'),'',0)+
+    field('exp','Experience with this work',sel('exp',EXP),'',0)+
+    field('intent','What is your intention or question for this session?',area('intent','In your own words, what would you like to focus on.'),'',1)+
+    field('dates','Preferred dates or times',area('dates','e.g. 30 mins on weekday evenings after 6pm ET, or the week of the 14th'),'',0)+
+    (TW.showBudget?field('budget','Budget range',sel('budget',BUDGET),'',0):'')+
+    '</div><div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===2)body.innerHTML=
+    '<h2 class="cyd-h">Wellbeing check.</h2><p class="cyd-sub">This work is not a substitute for medical or mental health care. Sharing this helps me hold the session responsibly and adjust anything that would not serve you.</p>'+
+    '<div class="cyd-grid">'+
+{% endraw %}

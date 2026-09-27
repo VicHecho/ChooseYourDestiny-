@@ -1,0 +1,590 @@
+{%- comment -%}
+  Choose Your Destiny — 2027 booking calendar
+  Paste this whole file into a Shopify page via a Custom Liquid section,
+  or save it as a snippet and render it with {% render 'cyd-bookings-2027' %}.
+
+  Everything is scoped to #cyd-book — no unscoped rules, so your theme is untouched.
+  No external fonts, scripts, or stylesheets.
+
+  Before going live, edit the CONFIG block near the top of the <script>:
+    ADVISOR_EMAIL   — already set to contact@chooseyourdestiny.us
+    SUBMIT_ENDPOINT — leave '' for the email fallback, or set a URL that accepts a JSON POST
+    INTAKE_URL      — where the intake page lives. This file expects it at
+                      /pages/client-intake; change it if your page handle differs.
+
+  Availability is currently OPEN every day, all three time bands.
+  Narrow it in Advisor access → Availability on the offline build, then ask
+  for this file to be regenerated.
+{%- endcomment -%}
+
+{% raw %}
+<style>
+/* Scoped to #cyd-book so this can be injected into a Shopify theme without collisions.
+   Token values mirror the CYD design system; inlined so the page works with no network. */
+#cyd-book{--ink-900:#0a0a0a;--ink-700:#1c1c1c;--ink-500:#3a3a3a;--paper-000:#fff;--paper-050:#faf9f7;--paper-100:#efeee9;--gold-300:#ffe774;--gold-500:#f0c93e;--gold-700:#c9a11f;--indigo-300:#5a4de0;--indigo-500:#2c1fa8;--indigo-700:#170f5c;--blue-500:#2f6fd1;--violet-500:#5c3a8f;--verdant-500:#5fa858;--magenta-500:#d94fb8;--font-serif:'Cormorant Garamond',Georgia,serif;--font-sans:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sp3:12px;--sp4:16px;--sp5:24px;--sp6:32px;--sp7:48px;--bw:2px;--shadow-lift:4px 4px 0 var(--ink-900);box-sizing:border-box;font-family:var(--font-sans);color:var(--ink-900);background:var(--paper-000);-webkit-font-smoothing:antialiased;line-height:1.5}
+#cyd-book *,#cyd-book *::before,#cyd-book *::after{box-sizing:border-box}
+#cyd-book h1,#cyd-book h2,#cyd-book h3,#cyd-book p,#cyd-book ul,#cyd-book li{margin:0;padding:0}
+#cyd-book a{color:var(--indigo-500)}
+#cyd-book a:hover{color:var(--indigo-700)}
+#cyd-book button{font-family:inherit}
+.cyd-blocks{display:flex;height:10px}
+.cyd-blocks>i{flex:1}
+.cyd-head{background:var(--ink-900);color:var(--paper-000);padding:var(--sp5) var(--sp5) var(--sp4)}
+.cyd-head-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp5);flex-wrap:wrap}
+.cyd-lock{display:flex;align-items:center;gap:14px;min-width:0;flex-wrap:wrap}
+.cyd-lock .wm{width:240px;height:auto;max-width:100%}
+.cyd-kicker{font-family:'Lora',Georgia,serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-500);font-weight:800}
+.cyd-wrap{max-width:1200px;margin:0 auto;padding:var(--sp6) var(--sp5) var(--sp7)}
+.cyd-panel{background:var(--paper-000);border:var(--bw) solid var(--ink-900);box-shadow:var(--shadow-lift);padding:var(--sp6)}
+.cyd-steps{display:flex;gap:2px;margin-bottom:var(--sp6);flex-wrap:wrap}
+.cyd-steps>div{flex:1 1 90px;min-width:0;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--paper-100);color:var(--ink-500);border-bottom:4px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cyd-steps>div.on{background:var(--ink-900);color:var(--paper-000)}
+.cyd-steps>div.done{background:var(--paper-050);color:var(--ink-900)}
+.cyd-steps>div:nth-child(1){border-bottom-color:var(--violet-500)}
+.cyd-steps>div:nth-child(2){border-bottom-color:var(--blue-500)}
+.cyd-steps>div:nth-child(3){border-bottom-color:var(--verdant-500)}
+.cyd-steps>div:nth-child(4){border-bottom-color:var(--gold-500)}
+.cyd-h{font-family:var(--font-serif);font-size:34px;line-height:1.1;font-weight:600;margin-bottom:8px}
+.cyd-sub{color:var(--ink-500);font-size:15px;max-width:62ch;text-wrap:pretty}
+.cyd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp4);margin-top:var(--sp6)}
+.cyd-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cyd-f.full{grid-column:1/-1}
+.cyd-f>label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.cyd-f .hint{font-size:12px;color:var(--ink-500);font-weight:400;letter-spacing:0;text-transform:none}
+.cyd-f input,.cyd-f textarea,.cyd-f select{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:11px 12px;border:var(--bw) solid var(--ink-900);border-radius:0;background:var(--paper-000);color:var(--ink-900)}
+.cyd-f textarea{min-height:90px;resize:vertical}
+.cyd-f input:focus,.cyd-f textarea:focus,.cyd-f select:focus{outline:3px solid var(--indigo-300);outline-offset:1px}
+.cyd-f .err{font-size:12px;color:#b3123c;font-weight:600}
+.cyd-f.bad input,.cyd-f.bad textarea,.cyd-f.bad select{border-color:#b3123c}
+.req{color:var(--magenta-500)}
+.cyd-picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:var(--sp5)}
+.cyd-pick{color:var(--ink-900);display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:var(--bw) solid var(--ink-900);padding:13px;cursor:pointer;background:var(--paper-000);transition:background 120ms cubic-bezier(.2,.8,.2,1);text-align:left;font:inherit}
+.cyd-pick:hover{background:var(--paper-050)}
+.cyd-pick.sel{background:var(--gold-300)}
+.cyd-pick b{display:block;font-size:14px;line-height:1.35}
+.cyd-pick span{display:block;font-size:12px;color:var(--ink-500);margin-top:3px}
+.cyd-pick.sel span{color:var(--ink-700)}
+/* calendar */
+.cyd-monthbar{display:flex;align-items:center;justify-content:space-between;gap:var(--sp4);margin-top:var(--sp6);border:var(--bw) solid var(--ink-900);padding:10px var(--sp4);background:var(--ink-900);color:var(--paper-000)}
+.cyd-monthbar b{font-family:var(--font-serif);font-size:22px;font-weight:600;letter-spacing:.01em}
+.cyd-monthbar button{color:var(--paper-000);background:transparent;border:var(--bw) solid var(--paper-000);color:var(--paper-000);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 14px;cursor:pointer;border-radius:0}
+.cyd-monthbar button:hover:not(:disabled){background:var(--indigo-700)}
+.cyd-monthbar button:disabled{opacity:.3;cursor:not-allowed}
+.cyd-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:var(--bw) solid var(--ink-900);border-top:0;background:var(--paper-050)}
+.cyd-dow>span{padding:7px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-500)}
+.cyd-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;border:var(--bw) solid var(--ink-900);border-top:0;padding:2px;background:var(--ink-900)}
+.cyd-day{color:var(--ink-900);aspect-ratio:1/1;min-height:52px;border:0;background:var(--paper-000);font:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:2px}
+.cyd-day:hover:not(:disabled){background:var(--gold-300)}
+.cyd-day:disabled{background:var(--paper-100);color:#b9b7b0;cursor:not-allowed}
+.cyd-day.sel{background:var(--ink-900);color:var(--paper-000)}
+.cyd-day.empty{background:var(--paper-050);cursor:default}
+.cyd-day i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--verdant-500)}
+.cyd-day.sel i{color:var(--gold-500)}
+.cyd-day:disabled i{color:transparent}
+.cyd-legendrow{display:flex;gap:var(--sp5);flex-wrap:wrap;margin-top:var(--sp4);font-size:12px;color:var(--ink-500)}
+.cyd-legendrow span{display:flex;align-items:center;gap:7px}
+.cyd-legendrow i{width:14px;height:14px;border:1px solid var(--ink-900);display:block}
+.cyd-day u{display:flex;gap:2px;text-decoration:none;margin-top:1px}
+.cyd-day u s{display:block;width:8px;height:3px;text-decoration:none}
+.cyd-tier{margin-top:var(--sp5)}
+.cyd-tierhd{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cyd-tierhd i{display:block;width:16px;height:16px;border:1px solid var(--ink-900);flex:none}
+.cyd-tierhd b{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.cyd-tierhd span{font-size:12px;color:var(--ink-500)}
+.cyd-tiernote{font-size:12px;color:var(--ink-500);margin-top:3px!important}
+.cyd-tier .cyd-slots{margin-top:var(--sp3)}
+/* slots */
+.cyd-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin-top:var(--sp5)}
+.cyd-slot{color:var(--ink-900);border:var(--bw) solid var(--ink-900);background:var(--paper-000);font:inherit;font-size:15px;font-weight:600;padding:13px 6px;cursor:pointer;border-radius:0}
+.cyd-slot:hover:not(:disabled){background:var(--gold-300)}
+.cyd-slot.sel{background:var(--ink-900);color:var(--paper-000)}
+.cyd-rate{display:flex;flex-direction:column;align-items:center;gap:2px;padding:13px 6px 11px}
+.cyd-rate b{font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.cyd-rate span{font-size:22px;font-weight:700;line-height:1.1}
+.cyd-rate small{font-size:10px;font-weight:600;letter-spacing:.04em;text-decoration:line-through;opacity:.62}
+.cyd-upsell{display:flex;gap:12px;align-items:flex-start;margin-top:24px;padding:16px 18px;border:var(--bw) solid var(--ink-900);cursor:pointer}
+.cyd-upsell input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--ink-900)}
+.cyd-upsell span{font-size:14px;line-height:1.6}
+.cyd-upsell b{display:block;font-size:15px;margin-bottom:3px}
+.cyd-upsell:hover{background:var(--gold-300)}
+.cyd-slot:disabled{background:var(--paper-100);color:#b9b7b0;cursor:not-allowed;text-decoration:line-through}
+.cyd-note{border-left:6px solid var(--blue-500);background:var(--paper-050);padding:var(--sp4);font-size:13px;color:var(--ink-700);margin-top:var(--sp5)}
+.cyd-note.warn{border-left-color:var(--gold-700)}
+.cyd-actions{display:flex;gap:var(--sp3);margin-top:var(--sp6);flex-wrap:wrap;align-items:center}
+.cyd-btn{color:var(--ink-900);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 26px;border:var(--bw) solid var(--ink-900);border-radius:0;cursor:pointer;background:var(--gold-500);color:var(--ink-900);box-shadow:var(--shadow-lift);transition:transform 120ms cubic-bezier(.2,.8,.2,1),box-shadow 120ms cubic-bezier(.2,.8,.2,1),background 120ms;display:inline-block;text-align:center}
+.cyd-btn:hover{background:var(--gold-300)}
+.cyd-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink-900)}
+.cyd-btn.dark{background:var(--ink-900);color:var(--paper-000)}
+.cyd-btn.dark:hover{background:var(--indigo-700)}
+.cyd-btn.ghost{background:transparent;box-shadow:none}
+.cyd-btn.ghost:hover{background:var(--paper-100)}
+.cyd-btn.sm{padding:9px 16px;font-size:12px;box-shadow:2px 2px 0 var(--ink-900)}
+.cyd-btn:disabled{opacity:.4;cursor:not-allowed}
+.cyd-spacer{flex:1}
+.cyd-review{margin-top:var(--sp5);border:var(--bw) solid var(--ink-900)}
+.cyd-review div{display:grid;grid-template-columns:190px 1fr;gap:var(--sp4);padding:10px var(--sp4);font-size:13.5px;border-bottom:1px solid var(--paper-100)}
+.cyd-review div:last-child{border-bottom:0}
+.cyd-review b{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);align-self:center}
+.cyd-review span{word-break:break-word;white-space:pre-wrap}
+.cyd-done{text-align:center;padding:var(--sp6) 0}
+.cyd-done .mark{font-family:var(--font-serif);font-size:56px;line-height:1;color:var(--verdant-500);margin-bottom:var(--sp4)}
+.cyd-when{font-family:var(--font-serif);font-size:26px;font-weight:600;margin:var(--sp4) 0 var(--sp3)}
+/* advisor */
+.cyd-admin{max-width:1200px;margin:0 auto var(--sp7);padding:0 var(--sp5)}
+.cyd-admin-panel{border:var(--bw) solid var(--ink-900);background:var(--paper-000);box-shadow:var(--shadow-lift)}
+.cyd-admin-bar{background:var(--ink-900);color:var(--paper-000);padding:var(--sp4);display:flex;gap:var(--sp3);align-items:center;flex-wrap:wrap}
+.cyd-admin-bar b{font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.cyd-admin-bar .cyd-btn{box-shadow:none;border-color:var(--paper-000);color:var(--paper-000);background:transparent}
+.cyd-admin-bar .cyd-btn:hover{background:var(--indigo-700)}
+.cyd-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cyd-tbl th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px var(--sp4);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)}
+.cyd-tbl td{padding:10px var(--sp4);border-bottom:1px solid var(--paper-100);vertical-align:top}
+.cyd-tbl tr:hover td{background:var(--paper-050)}
+.cyd-empty{padding:var(--sp6);text-align:center;color:var(--ink-500);font-size:14px}
+.cyd-availgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp4)}
+.cyd-availgrid label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px}
+.cyd-availgrid input{width:100%;font:inherit;font-size:13px;padding:8px;border:var(--bw) solid var(--ink-900);border-radius:0}
+.cyd-foot{max-width:1200px;margin:0 auto;padding:0 var(--sp5) var(--sp6);font-size:12px;color:var(--ink-500);display:flex;gap:var(--sp4);justify-content:space-between;flex-wrap:wrap}
+.cyd-foot button{background:none;border:0;color:var(--ink-500);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+.cyd-foot button:hover{color:var(--ink-900)}
+.cyd-hide{display:none!important}
+@media(max-width:700px){.cyd-grid,.cyd-picks{grid-template-columns:minmax(0,1fr)}.cyd-panel{padding:var(--sp5)}.cyd-h{font-size:27px}.cyd-review div{grid-template-columns:minmax(0,1fr);gap:2px}.cyd-day{min-height:42px;font-size:13px}.cyd-day i{display:none}}
+@media print{.cyd-noprint{display:none!important}.cyd-panel{border:0;box-shadow:none;padding:0}}
+</style>
+
+<div id="cyd-book">
+<div class="cyd-blocks"><i style="background:var(--violet-500)"></i><i style="background:var(--blue-500)"></i><i style="background:var(--verdant-500)"></i><i style="background:var(--gold-500)"></i></div>
+<header class="cyd-head"><div class="cyd-head-in">
+<div class="cyd-lock">{% endraw %}{%- if settings.logo != blank -%}<img class="wm" src="{{ settings.logo | image_url: width: 800 }}" alt="Choose Your Destiny">{%- else -%}<span class="wm" style="font-size:22px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff">{{ shop.name }}</span>{%- endif -%}{% raw %}</div>
+<div style="text-align:right"><div class="cyd-kicker">2027 Bookings</div></div>
+</div></header>
+
+<div class="cyd-wrap"><div class="cyd-panel">
+<div class="cyd-steps cyd-noprint" id="cyd-steps"></div>
+<div id="cyd-body"></div>
+</div></div>
+
+<div class="cyd-admin cyd-hide cyd-noprint" id="cyd-admin"><div class="cyd-admin-panel">
+<div class="cyd-admin-bar"><b>2027 Calendar</b><span id="cyd-count" style="font-size:12px;color:#bdbdbd"></span><span class="cyd-spacer"></span>
+<button class="cyd-btn sm" id="cyd-csv">Export CSV</button><button class="cyd-btn sm" id="cyd-db">Save Database File</button><button class="cyd-btn sm" id="cyd-import">Import JSON</button><button class="cyd-btn sm" id="cyd-avail">Availability</button><button class="cyd-btn sm" id="cyd-close">Close</button></div>
+<div id="cyd-settings" class="cyd-hide" style="padding:var(--sp5);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)">
+<p style="font-size:13px;color:var(--ink-500);margin-bottom:16px;max-width:62ch">Which hours you offer on each weekday, as comma-separated 24-hour times. Leave a day empty to close it. Each hour is sorted into a band automatically &mdash; <b style="color:var(--verdant-500)">regular 8am&ndash;3pm</b>, <b style="color:var(--gold-700)">limited 4pm&ndash;9pm</b>, <b style="color:var(--violet-500)">after hours 10pm&ndash;7am</b> &mdash; and the swatches under each day show which bands it covers. Saved on this device.</p>
+<div class="cyd-availgrid" id="cyd-availgrid"></div>
+<div style="margin-top:var(--sp5)"><label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px">Blocked dates (comma-separated, YYYY-MM-DD)</label><input id="s_blocked" type="text" placeholder="2027-01-01, 2027-07-04" style="width:100%;font-size:13px;padding:8px;border:2px solid var(--ink-900);border-radius:0;font-family:inherit"></div>
+<div style="margin-top:var(--sp5)"><label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px">Time zone label shown to clients</label><input id="s_tz" type="text" style="width:100%;font-size:13px;padding:8px;border:2px solid var(--ink-900);border-radius:0;font-family:inherit"></div>
+<div class="cyd-actions"><button class="cyd-btn" id="cyd-save-avail">Save availability</button><span id="cyd-saved" style="font-size:12px;color:var(--verdant-500);font-weight:700"></span></div>
+</div>
+<div id="cyd-records"></div>
+</div></div>
+
+<div class="cyd-foot cyd-noprint"><span id="cyd-footnote">All bookings are stored only on this device. Nothing is transmitted.</span><button id="cyd-advisor">Advisor access</button></div>
+<input type="file" id="cyd-file" accept=".json" style="display:none">
+</div>
+
+<script>
+(function(){
+var KEY='cyd_bookings_2027_v1',DKEY='cyd_booking_draft_v1',AKEY='cyd_availability_v1',PKEY='cyd_booking_prefill';
+
+/* ===== BUILD MODE =====================================================
+   'advisor' — your own device. Keeps the booking database, shows the
+               Advisor panel, marks taken slots, exports CSV / JSON / DB.
+   'public'  — the Shopify embed. No database and no Advisor panel, so a
+               visitor's browser never holds anyone else's bookings. Slots
+               are shown as requests and the booking is delivered to you.
+   bookings-2027-shopify.html is this file with MODE flipped to 'public'.
+   ===================================================================== */
+var MODE='public';
+var ADVISOR_EMAIL='contact@chooseyourdestiny.us';
+var SUBMIT_ENDPOINT='';
+var INTAKE_URL='/pages/client-intake';
+
+var YEAR=2027;
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var SERVICES=[
+  {name:'Spiritual Advice (divination, i.e. rune / tarot readings)',note:'Rune and tarot readings',durations:[30,60,90]},
+  {name:'Sleep Subliminals (custom 8 hr video program)',note:'Consultation to scope your custom program',durations:[30,60]},
+  {name:'Energy or wellness coaching (ongoing, specific or deep work)',note:'Deep or ongoing work',durations:[60,90,120]},
+  {name:'Hack The Matrix Class (I will teach you how to effectively use -The Metaphysical Dayplanner-)',note:'Learn to use The Metaphysical Dayplanner',durations:[30,60,90,120]}
+];
+/* Rates. Standard is $100/hr. Every length is currently marked down to $1/min.
+   promoEnds: set the last day of the price cut as 'YYYY-MM-DD' to show a deadline,
+   or leave it '' to show the cut with no end date. */
+var RATES={30:{now:30,was:50},60:{now:60,was:100},90:{now:90,was:150},120:{now:120,was:200}};
+var promoEnds='2027-01-01';
+function money(n){return '$'+n}
+function promoLine(){
+  if(!promoEnds)return 'Reduced rates, limited time.';
+  var d=new Date(promoEnds+'T12:00:00');
+  return 'Reduced rates through '+MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear()+'.';
+}
+/* Three time bands. A slot's band is derived from its hour, so the advisor only
+   ever edits hours in Availability — the tiers follow automatically.
+     regular : 08:00–15:59  standard rate
+     limited : 16:00–21:59  availability and fees may vary
+     after   : 22:00–07:59  availability and fees may vary
+   'after' wraps midnight, so it is the fallback rather than a range test. */
+var TIERS=[
+  {key:'regular',label:'Regular hours',window:'8am \u2013 3pm',note:'Standard availability and rates.',color:'var(--verdant-500)',test:function(hr){return hr>=8&&hr<16}},
+  {key:'limited',label:'Limited hours',window:'4pm \u2013 9pm',note:'Availability and fees may vary.',color:'var(--gold-700)',test:function(hr){return hr>=16&&hr<22}},
+  {key:'after',label:'After hours',window:'10pm \u2013 7am',note:'Availability and fees may vary.',color:'var(--violet-500)',test:function(){return true},
+   /* this band wraps midnight, so 22:00 must sort before 00:00 */
+   order:function(hr){return (hr+2)%24}}
+];
+function tierFor(t){var hr=+String(t).split(':')[0];for(var i=0;i<TIERS.length;i++)if(TIERS[i].test(hr))return TIERS[i];return TIERS[2]}
+/* sort a band's hours by its own start, not lexically */
+function sortInTier(list,tier){return list.slice().sort(function(a,c){
+  var ha=+String(a).split(':')[0],hc=+String(c).split(':')[0];
+  var oa=tier.order?tier.order(ha):ha,oc=tier.order?tier.order(hc):hc;
+  return oa-oc||String(a).localeCompare(String(c));
+})}
+function tierByKey(k){for(var i=0;i<TIERS.length;i++)if(TIERS[i].key===k)return TIERS[i];return null}
+var DEFAULT_AVAIL={
+  0:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  1:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  2:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  3:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  4:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  5:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  6:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00']
+};
+
+var avail={days:JSON.parse(JSON.stringify(DEFAULT_AVAIL)),blocked:[],tz:'Eastern Time (ET)'};
+var step=0,b={},month=0;
+var $=function(s,r){return (r||document).querySelector(s)};
+var body=$('#cyd-body'),stepsEl=$('#cyd-steps');
+var STEPS=['Session','Date','Time','Your details'];
+
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
+function save(r){try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){alert('Could not save to this device: '+e.message)}}
+function loadAvail(){try{var v=JSON.parse(localStorage.getItem(AKEY));if(v&&v.days)avail=v}catch(e){}}
+function saveDraft(){try{localStorage.setItem(DKEY,JSON.stringify({step:step,b:b,month:month}))}catch(e){}}
+function loadDraft(){try{var v=JSON.parse(localStorage.getItem(DKEY));if(v&&v.b){b=v.b;step=v.step||0;month=v.month||0}}catch(e){}}
+function dl(name,text,type){var bl=new Blob([text],{type:type||'application/json'}),u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000)}
+function slug(s){return String(s||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'client'}
+function pad(n){return String(n).padStart(2,'0')}
+function iso(y,m,day){return y+'-'+pad(m+1)+'-'+pad(day)}
+function pretty(dstr){var p=dstr.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);return DOW[dt.getDay()]+', '+MONTHS[dt.getMonth()]+' '+(+p[2])+', '+p[0]}
+function pretty12(t){var p=t.split(':'),h=+p[0],ap=h>=12?'pm':'am',h12=h%12===0?12:h%12;return h12+(p[1]==='00'?'':':'+p[1])+' '+ap}
+function endTime(t,mins){var p=t.split(':'),tot=(+p[0])*60+(+p[1])+mins;return pad(Math.floor(tot/60)%24)+':'+pad(tot%60)}
+function takenKeys(){var o={};if(MODE==='advisor')load().forEach(function(r){if(r.status!=='cancelled')o[r.date+' '+r.time]=1});return o}
+
+/* ---- render ---- */
+function renderSteps(){stepsEl.innerHTML=STEPS.map(function(s,i){return '<div class="'+(i===step?'on':(i<step?'done':''))+'">'+(i+1)+'. '+s+'</div>'}).join('')}
+
+function render(){
+  renderSteps();
+  if(step===0){
+    var svc=SERVICES.map(function(s,i){return '<button type="button" class="cyd-pick'+(b.service===s.name?' sel':'')+'" data-svc="'+i+'"><b>'+esc(s.name)+'</b><span>'+esc(s.note)+'</span></button>'}).join('');
+    var cur=SERVICES.filter(function(s){return s.name===b.service})[0];
+    var dur=cur?'<div class="cyd-f full" data-f="duration" style="margin-top:32px"><label>How long <span class="req">*</span><div class="hint">Sessions often run over. That extra time is donated, not billed. '+esc(promoLine())+'</div></label><div class="cyd-slots" style="margin-top:0">'+cur.durations.map(function(m){var r=RATES[m];return '<button type="button" class="cyd-slot cyd-rate'+(b.duration===m?' sel':'')+'" data-dur="'+m+'"><b>'+m+' min</b><span>'+money(r.now)+'</span><small>regularly '+money(r.was)+'</small></button>'}).join('')+'</div></div>':'';
+    body.innerHTML='<h2 class="cyd-h">Let\u2019s find your time in 2027.</h2><p class="cyd-sub">Choose what you would like to book. Every session runs on '+esc(avail.tz)+'.</p>'+
+      '<div class="cyd-f full" data-f="service"><div class="cyd-picks">'+svc+'</div></div>'+dur+
+      '<div class="cyd-actions"><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  }
+  if(step===1)body.innerHTML='<h2 class="cyd-h">Pick a date.</h2><p class="cyd-sub">Open days are shown in white with the number of windows left. Move through the year with the arrows.</p>'+
+    '<div class="cyd-f full" data-f="date">'+calendarHTML()+'</div>'+
+    '<div class="cyd-legendrow">'+TIERS.map(function(tier){return '<span><i style="background:'+tier.color+'"></i> '+tier.label+' \u00b7 '+tier.window+'</span>'}).join('')+'<span><i style="background:var(--paper-100)"></i> Closed or full</span></div>'+
+    '<p class="cyd-sub" style="font-size:13px;margin-top:10px">Limited and after-hours availability and fees may vary.</p>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  if(step===2){
+    var day=new Date(+b.date.split('-')[0],+b.date.split('-')[1]-1,+b.date.split('-')[2]).getDay();
+    var taken=takenKeys();
+    var dayslots=avail.days[day]||[];
+    var groups=TIERS.map(function(tier){
+      var mine=sortInTier(dayslots.filter(function(t){return tierFor(t).key===tier.key}),tier);
+      if(!mine.length)return '';
+      return '<div class="cyd-tier"><div class="cyd-tierhd"><i style="background:'+tier.color+'"></i><b>'+tier.label+'</b><span>'+tier.window+'</span></div>'+
+        (tier.key==='regular'?'':'<p class="cyd-tiernote">'+tier.note+'</p>')+
+        '<div class="cyd-slots">'+mine.map(function(t){
+          var isTaken=!!taken[b.date+' '+t];
+          return '<button type="button" class="cyd-slot'+(b.time===t?' sel':'')+'" data-time="'+t+'"'+(isTaken?' disabled title="Already booked"':'')+'>'+pretty12(t)+'</button>';
+        }).join('')+'</div></div>';
+    }).join('');
+    var slots=groups||'<p class="cyd-sub">No windows left on this day.</p>';
+    body.innerHTML='<h2 class="cyd-h">'+esc(pretty(b.date))+'</h2><p class="cyd-sub">'+esc(b.duration)+' minutes for '+esc(b.service)+'. Times are '+esc(avail.tz)+'. Regular hours run at standard rates; limited and after-hours windows may vary in both availability and fee.</p>'+
+      '<div class="cyd-f full" data-f="time"><div class="cyd-slots">'+slots+'</div></div>'+
+      (MODE==='public'?'<div class="cyd-note">Times shown are my usual windows. I will confirm your slot by email, or offer the nearest alternative if someone reached it first.</div>':'')+
+      '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  }
+  if(step===3)body.innerHTML='<h2 class="cyd-h">Where should I reach you?</h2><p class="cyd-sub">'+esc(pretty(b.date))+' at '+esc(pretty12(b.time))+', '+esc(b.duration)+' minutes.</p>'+
+    '<div class="cyd-grid">'+
+    field('name','Full name','<input id="f_name" type="text" value="'+esc(b.name)+'" placeholder="Your name">','',1)+
+    field('email','Email','<input id="f_email" type="email" value="'+esc(b.email)+'" placeholder="you@example.com">','',1)+
+    field('phone','Phone','<input id="f_phone" type="tel" value="'+esc(b.phone)+'">','',0)+
+    field('firsttime','Have we worked together before?','<select id="f_firsttime"><option value="">Select\u2026</option>'+['This is my first session','I am a returning client'].map(function(o){return '<option'+(b.firsttime===o?' selected':'')+'>'+o+'</option>'}).join('')+'</select>','',0)+
+    field('notes','Anything I should know before we meet','<textarea id="f_notes" placeholder="Optional. What you would like to focus on, or anything affecting timing.">'+esc(b.notes)+'</textarea>','',0)+
+    '</div>'+
+    '<label class="cyd-upsell"><input type="checkbox" id="c_book"'+(b.book?' checked':'')+'><span><b>Add the <i>Metaphysical Dayplanner \u2014 Hack The Matrix 2026</i>, Deluxe Edition \u2014 $49.99</b>Paperback copy, early access to the digital edition, and a limited edition Choose Your Destiny tote while supplies last. Tick this and I will add it to your invoice.</span></label>'+
+    reviewHTML()+
+    '<div class="cyd-note">'+(MODE==='advisor'?'Choosing a time here holds it for you.':'Choosing a time here sends me your request.')+' I will confirm the date with you by phone or email before our session.</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn dark" id="confirm">'+(MODE==='advisor'?'Confirm booking':'Request this time')+'</button></div>';
+  if(step===4){
+    var msg=MODE==='advisor'
+      ? 'Your session is on my calendar. I will confirm the date with you by phone or email before we meet. Add it to your own calendar with the button below.'
+      : (SUBMIT_ENDPOINT&&!b.deliveryFailed
+          ? 'Your request has been sent. I will confirm the date with you by phone or email at <b>'+esc(b.email)+'</b> before anything is final.'
+          : 'Your request is ready to send. <b>Please press the email button below</b> so it reaches me \u2014 I will then confirm the date with you by phone or email at <b>'+esc(b.email)+'</b>.');
+    body.innerHTML='<div class="cyd-done"><div class="mark">&#10003;</div><h2 class="cyd-h">'+(MODE==='advisor'?'You\u2019re booked.':'Almost there.')+'</h2>'+
+      '<div class="cyd-when">'+esc(pretty(b.date))+'<br>'+esc(pretty12(b.time))+' \u2013 '+esc(pretty12(endTime(b.time,b.duration)))+' '+esc(avail.tz)+'</div>'+
+      '<p class="cyd-sub" style="margin:0 auto">'+msg+'</p>'+
+      '<div class="cyd-actions" style="justify-content:center">'+
+      (MODE==='public'&&(!SUBMIT_ENDPOINT||b.deliveryFailed)?'<a class="cyd-btn" style="text-decoration:none" href="'+mailtoLink(b)+'">Email my request</a>':'')+
+      '<button class="cyd-btn'+(MODE==='public'&&(!SUBMIT_ENDPOINT||b.deliveryFailed)?' ghost':'')+'" id="ics">Add to my calendar</button>'+
+      (MODE==='advisor'?'<button class="cyd-btn ghost" id="again">Book another session</button>':'')+
+      '</div>'+
+      (b.time&&tierFor(b.time).key!=='regular'?'<div class="cyd-note warn" style="text-align:left;max-width:62ch;margin:32px auto 0">Your session falls in <b>'+esc(tierFor(b.time).label.toLowerCase())+'</b> ('+esc(tierFor(b.time).window)+'). Availability and fees for these hours may vary \u2014 I will confirm both with you before the session.</div>':'')+
+      '<div class="cyd-note" style="text-align:left;max-width:62ch;margin:32px auto 0">Please read and sign the client intake and consultation agreement before our first session. <a href="'+INTAKE_URL+'">Open the intake form</a>.</div>'+
+      '</div>';
+  }
+  wire();window.scrollTo(0,0);
+}
+
+function field(id,label,html,hint,req){return '<div class="cyd-f'+(id==='notes'?' full':'')+'" data-f="'+id+'"><label for="f_'+id+'">'+esc(label)+(req?' <span class="req">*</span>':'')+(hint?'<div class="hint">'+hint+'</div>':'')+'</label>'+html+'</div>'}
+
+function calendarHTML(){
+  var first=new Date(YEAR,month,1).getDay(),days=new Date(YEAR,month+1,0).getDate(),taken=takenKeys();
+  var cells='';
+  for(var i=0;i<first;i++)cells+='<div class="cyd-day empty"></div>';
+  for(var dnum=1;dnum<=days;dnum++){
+    var ds=iso(YEAR,month,dnum),dow=new Date(YEAR,month,dnum).getDay();
+    var slots=(avail.days[dow]||[]).filter(function(t){return !taken[ds+' '+t]});
+    var blocked=avail.blocked.indexOf(ds)>-1;
+    var open=!blocked&&slots.length>0;
+    var bands=open?TIERS.filter(function(tier){return slots.some(function(t){return tierFor(t).key===tier.key})}):[];
+    cells+='<button type="button" class="cyd-day'+(b.date===ds?' sel':'')+'" data-date="'+ds+'"'+(open?'':' disabled')+'>'+dnum+
+      (open?'<i>'+slots.length+' open</i><u>'+bands.map(function(tier){return '<s style="background:'+tier.color+'"></s>'}).join('')+'</u>':'<i>\u00a0</i>')+'</button>';
+  }
+  return '<div class="cyd-monthbar"><button type="button" id="prevm"'+(month===0?' disabled':'')+'>&larr; Prev</button><b>'+MONTHS[month]+' '+YEAR+'</b><button type="button" id="nextm"'+(month===11?' disabled':'')+'>Next &rarr;</button></div>'+
+    '<div class="cyd-dow">'+DOW.map(function(d){return '<span>'+d+'</span>'}).join('')+'</div>'+
+    '<div class="cyd-cal">'+cells+'</div>';
+}
+
+function row(label,val){if(val==null||val==='')return '';return '<div><b>'+esc(label)+'</b><span>'+esc(val)+'</span></div>'}
+function reviewHTML(){
+  return '<div style="margin-top:32px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Your booking</div><div class="cyd-review">'+
+    row('Session',b.service)+row('Length',b.duration?b.duration+' minutes':'')+
+    (b.duration&&RATES[b.duration]?row('Fee',money(RATES[b.duration].now)+'  (regularly '+money(RATES[b.duration].was)+')'):'')+
+    (b.book?row('Also sending','Metaphysical Dayplanner \u2014 Hack The Matrix 2026, Deluxe Edition ($49.99)'):'')+
+    row('Date',b.date?pretty(b.date):'')+row('Time',b.time?pretty12(b.time)+' \u2013 '+pretty12(endTime(b.time,b.duration))+' '+avail.tz:'')+
+    (b.time?row('Rate band',tierFor(b.time).label+' ('+tierFor(b.time).window+')'+(tierFor(b.time).key==='regular'?'':' \u2014 fees may vary')):'')+
+  '</div>';
+}
+
+function collect(){
+  body.querySelectorAll('input[id^=f_],select[id^=f_],textarea[id^=f_]').forEach(function(el){b[el.id.slice(2)]=el.value});
+  var bk=body.querySelector('#c_book');if(bk)b.book=bk.checked;
+  saveDraft();
+}
+function flag(id,msg){var f=body.querySelector('[data-f="'+id+'"]');if(!f)return;f.classList.add('bad');if(!f.querySelector('.err')){var e=document.createElement('div');e.className='err';e.textContent=msg;f.appendChild(e)}}
+function validate(){
+  body.querySelectorAll('.bad').forEach(function(f){f.classList.remove('bad')});
+  body.querySelectorAll('.err').forEach(function(e){e.remove()});
+  var bad=[];
+  if(step===0){if(!b.service){flag('service','Please choose a session type.');bad.push(1)}
+    if(!b.duration){flag('duration','Please choose a length.');bad.push(1)}}
+  if(step===1&&!b.date){flag('date','Please pick a date.');bad.push(1)}
+  if(step===2&&!b.time){flag('time','Please pick a time.');bad.push(1)}
+  if(step===3){
+    if(!String(b.name||'').trim()){flag('name','Please enter your name.');bad.push(1)}
+    if(!String(b.email||'').trim()){flag('email','Please enter your email.');bad.push(1)}
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(b.email.trim())){flag('email','That email does not look right.');bad.push(1)}
+  }
+  return bad.length===0;
+}
+
+function confirmBooking(){
+  var rec=JSON.parse(JSON.stringify(b));
+  rec.id='CYD-BK-'+Date.now().toString(36).toUpperCase();
+  rec.createdAt=new Date().toISOString();
+  rec.year=YEAR;rec.timezone=avail.tz;rec.status='booked';rec.source=MODE;rec.replied=false;
+  rec.endTime=endTime(rec.time,rec.duration);
+  rec.fee=RATES[rec.duration]?RATES[rec.duration].now:'';
+  rec.book=!!rec.book;
+  rec.tier=tierFor(rec.time).key;
+  rec.tierLabel=tierFor(rec.time).label;
+  if(MODE==='advisor'){
+    var taken=takenKeys();
+    if(taken[rec.date+' '+rec.time]){alert('That time was just taken. Please choose another.');step=2;render();return}
+    var all=load();all.push(rec);all.sort(function(x,y){return (x.date+x.time).localeCompare(y.date+y.time)});save(all);
+  }else{
+    rec.status='requested';
+    /* No backend means the client's own mail app is the only delivery path, so
+       open it for them rather than hoping they find the button. The button
+       stays on the confirmation screen as a manual retry. */
+    if(!SUBMIT_ENDPOINT){setTimeout(function(){try{window.location.href=mailtoLink(rec)}catch(e){}},600)}
+    if(SUBMIT_ENDPOINT){
+      try{fetch(SUBMIT_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status)})
+        .catch(function(){b.deliveryFailed=true;render()})}catch(e){b.deliveryFailed=true}
+    }
+  }
+  b=rec;
+  try{localStorage.removeItem(DKEY)}catch(e){}
+  step=4;render();
+}
+
+function mailtoLink(r){
+  var L=['Session request \u2014 '+(r.name||''),'',
+    'Date: '+(r.date?pretty(r.date):''),'Time: '+(r.time?pretty12(r.time)+' \u2013 '+pretty12(endTime(r.time,r.duration)):'')+' '+avail.tz,
+    'Session: '+(r.service||''),'Length: '+(r.duration||'')+' minutes',
+    'Fee: '+(RATES[r.duration]?money(RATES[r.duration].now)+' (regularly '+money(RATES[r.duration].was)+')':''),
+    'Book requested: '+(r.book?'yes \u2014 Dayplanner Deluxe Edition, $49.99':'no'),
+    'Rate band: '+(r.time?tierFor(r.time).label+' ('+tierFor(r.time).window+')':''),'',
+    'Name: '+(r.name||''),'Email: '+(r.email||''),'Phone: '+(r.phone||''),'Status: '+(r.firsttime||''),'',
+    'Notes: '+(r.notes||'\u2014')];
+  return 'mailto:'+ADVISOR_EMAIL+'?subject='+encodeURIComponent('2027 session request \u2014 '+(r.name||''))+'&body='+encodeURIComponent(L.join('\n'));
+}
+
+function icsFor(r){
+  function stamp(dstr,t){var p=dstr.split('-'),q=t.split(':');return p[0]+p[1]+p[2]+'T'+q[0]+q[1]+'00'}
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Choose Your Destiny//2027 Bookings//EN','BEGIN:VEVENT',
+    'UID:'+(r.id||'cyd')+'@chooseyourdestiny.us',
+    'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
+    'DTSTART:'+stamp(r.date,r.time),'DTEND:'+stamp(r.date,endTime(r.time,r.duration)),
+    'SUMMARY:Choose Your Destiny \u2014 '+(r.service||'Session'),
+    'DESCRIPTION:'+(r.duration||'')+' minute session with Vic Hecho. Times are '+avail.tz+'.',
+    'ORGANIZER;CN=Choose Your Destiny:mailto:'+ADVISOR_EMAIL,
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
+}
+
+function wire(){
+  body.querySelectorAll('[data-svc]').forEach(function(btn){btn.addEventListener('click',function(){
+    var s=SERVICES[+btn.dataset.svc];b.service=s.name;
+    if(s.durations.indexOf(b.duration)<0)b.duration=null;
+    saveDraft();render();
+  })});
+  body.querySelectorAll('[data-dur]').forEach(function(btn){btn.addEventListener('click',function(){b.duration=+btn.dataset.dur;saveDraft();render()})});
+  body.querySelectorAll('[data-date]').forEach(function(btn){btn.addEventListener('click',function(){b.date=btn.dataset.date;b.time=null;saveDraft();step=2;render()})});
+  body.querySelectorAll('[data-time]').forEach(function(btn){btn.addEventListener('click',function(){b.time=btn.dataset.time;saveDraft();step=3;render()})});
+  var pm=body.querySelector('#prevm');if(pm)pm.addEventListener('click',function(){if(month>0){month--;saveDraft();render()}});
+  var nm=body.querySelector('#nextm');if(nm)nm.addEventListener('click',function(){if(month<11){month++;saveDraft();render()}});
+  body.querySelectorAll('[data-go]').forEach(function(btn){btn.addEventListener('click',function(){
+    collect();var dir=+btn.dataset.go;
+    if(dir>0&&!validate())return;
+    step=Math.max(0,Math.min(4,step+dir));render();
+  })});
+  body.querySelectorAll('input,select,textarea').forEach(function(el){el.addEventListener('change',collect)});
+  var c=body.querySelector('#confirm');if(c)c.addEventListener('click',function(){collect();if(validate())confirmBooking()});
+  var ic=body.querySelector('#ics');if(ic)ic.addEventListener('click',function(){dl('cyd-session-'+b.date+'.ics',icsFor(b),'text/calendar')});
+  var ag=body.querySelector('#again');if(ag)ag.addEventListener('click',function(){b={};step=0;render()});
+}
+
+/* ---- advisor panel (advisor build only) ---- */
+var adm=$('#cyd-admin');
+function on(sel,ev,fn){var e=$(sel);if(e)e.addEventListener(ev,fn)}
+if(MODE!=='advisor'){
+  [adm,$('#cyd-advisor'),$('#cyd-file')].forEach(function(e){if(e)e.remove()});
+  var fn=$('#cyd-footnote');
+  if(fn)fn.textContent='Your request is sent only to Choose Your Destiny. Nothing is stored on this site.';
+}
+
+function renderRecords(){
+  var all=load(),pending=all.filter(function(r){return !r.replied}).length;
+  $('#cyd-count').textContent=all.length+' booking'+(all.length===1?'':'s')+(pending?' \u00b7 '+pending+' awaiting your reply':'');
+  if(!all.length){$('#cyd-records').innerHTML='<div class="cyd-empty">No bookings on this device yet.</div>';return}
+  $('#cyd-records').innerHTML='<table class="cyd-tbl"><thead><tr><th>When</th><th>Client</th><th>Contact</th><th>Session</th><th></th></tr></thead><tbody>'+
+  all.map(function(r,i){return '<tr><td><b style="font-size:13px;letter-spacing:0;text-transform:none">'+esc(pretty(r.date))+'</b><div>'+esc(pretty12(r.time))+' \u2013 '+esc(pretty12(r.endTime||endTime(r.time,r.duration)))+'</div></td>'+
+  '<td>'+esc(r.name)+'<div style="color:#3a3a3a;font-size:11px">'+esc(r.firsttime||'')+'</div></td>'+
+  '<td>'+esc(r.email)+'<div>'+esc(r.phone||'')+'</div></td>'+
+  '<td>'+esc(r.service)+'<div>'+esc(r.duration)+' min</div></td>'+
+  '<td style="white-space:nowrap">'+(r.replied?'<button class="cyd-btn ghost sm" data-reply="'+i+'" title="Mark as awaiting reply">\u2713 Confirmed</button>':'<button class="cyd-btn sm" data-reply="'+i+'" title="Mark as confirmed">Needs reply</button>')+' <button class="cyd-btn ghost sm" data-mail="'+i+'">Email</button> <button class="cyd-btn ghost sm" data-ics="'+i+'">ICS</button> <button class="cyd-btn ghost sm" data-del="'+i+'">Delete</button></td></tr>'}).join('')+'</tbody></table>';
+  $('#cyd-records').querySelectorAll('[data-reply]').forEach(function(bt){bt.addEventListener('click',function(){var all=load();all[+bt.dataset.reply].replied=!all[+bt.dataset.reply].replied;save(all);renderRecords()})});
+  $('#cyd-records').querySelectorAll('[data-mail]').forEach(function(bt){bt.addEventListener('click',function(){
+    var r=load()[+bt.dataset.mail];
+    var L=['Hi '+(r.name||'')+',','','Confirming our session:','',pretty(r.date),pretty12(r.time)+' \u2013 '+pretty12(r.endTime||endTime(r.time,r.duration))+' '+(r.timezone||avail.tz),(r.service||'')+' \u2014 '+(r.duration||'')+' minutes','','\u2014 Vic'];
+    window.location.href='mailto:'+encodeURIComponent(r.email||'')+'?subject='+encodeURIComponent('Confirming your session \u2014 '+pretty(r.date))+'&body='+encodeURIComponent(L.join('\n'));
+  })});
+  $('#cyd-records').querySelectorAll('[data-ics]').forEach(function(bt){bt.addEventListener('click',function(){var r=load()[+bt.dataset.ics];dl('cyd-session-'+slug(r.name)+'-'+r.date+'.ics',icsFor(r),'text/calendar')})});
+  $('#cyd-records').querySelectorAll('[data-del]').forEach(function(bt){bt.addEventListener('click',function(){var all=load(),r=all[+bt.dataset.del];if(confirm('Delete the booking for '+r.name+' on '+pretty(r.date)+'?')){all.splice(+bt.dataset.del,1);save(all);renderRecords();render()}})});
+}
+
+function renderAvailEditor(){
+  $('#cyd-availgrid').innerHTML=DOW.map(function(d,i){
+    var bands=TIERS.filter(function(tier){return (avail.days[i]||[]).some(function(t){return tierFor(t).key===tier.key})});
+    return '<div><label>'+d+'</label><input id="a_'+i+'" type="text" value="'+esc((avail.days[i]||[]).join(', '))+'" placeholder="closed">'+
+      '<div style="display:flex;gap:5px;margin-top:5px;min-height:8px">'+bands.map(function(tier){return '<s style="display:block;width:16px;height:6px;background:'+tier.color+'"></s>'}).join('')+'</div></div>';
+  }).join('');
+  $('#s_blocked').value=(avail.blocked||[]).join(', ');
+  $('#s_tz').value=avail.tz||'';
+}
+on('#cyd-avail','click',function(){
+  var s=$('#cyd-settings');s.classList.toggle('cyd-hide');
+  if(!s.classList.contains('cyd-hide'))renderAvailEditor();
+});
+on('#cyd-save-avail','click',function(){
+  var days={};
+  for(var i=0;i<7;i++){
+    days[i]=($('#a_'+i).value||'').split(',').map(function(t){return t.trim()})
+      .filter(function(t){return /^\d{1,2}:\d{2}$/.test(t)})
+      .map(function(t){var p=t.split(':');return pad(+p[0])+':'+p[1]})
+      .sort();
+  }
+  avail.days=days;
+  avail.blocked=($('#s_blocked').value||'').split(',').map(function(t){return t.trim()}).filter(function(t){return /^\d{4}-\d{2}-\d{2}$/.test(t)});
+  avail.tz=$('#s_tz').value.trim()||'Eastern Time (ET)';
+  try{localStorage.setItem(AKEY,JSON.stringify(avail))}catch(e){alert('Could not save: '+e.message)}
+  $('#cyd-saved').textContent='Saved.';setTimeout(function(){$('#cyd-saved').textContent=''},2500);
+  render();
+});
+on('#cyd-advisor','click',function(){adm.classList.toggle('cyd-hide');if(!adm.classList.contains('cyd-hide'))renderRecords()});
+on('#cyd-close','click',function(){adm.classList.add('cyd-hide')});
+on('#cyd-db','click',function(){
+  var all=load();
+  if(!all.length)return alert('No bookings to compile yet.');
+  dl('cyd-bookings-'+YEAR+'-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({
+    database:'Choose Your Destiny \u2014 '+YEAR+' bookings',
+    generatedAt:new Date().toISOString(),
+    bookingCount:all.length,
+    timezone:avail.tz,
+    availability:avail,
+    bookings:all
+  },null,2));
+});
+on('#cyd-csv','click',function(){
+  var all=load();if(!all.length)return alert('No bookings to export.');
+  var cols=['id','createdAt','date','time','endTime','timezone','tier','tierLabel','duration','service','fee','book','name','email','phone','firsttime','notes','status','replied'];
+  function cell(v){if(v===true)v='yes';if(v===false)v='no';v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"'}
+  dl('cyd-bookings-'+YEAR+'-'+new Date().toISOString().slice(0,10)+'.csv',
+    '\ufeff'+cols.join(',')+'\r\n'+all.map(function(r){return cols.map(function(c){return cell(r[c])}).join(',')}).join('\r\n'),'text/csv');
+});
+on('#cyd-import','click',function(){$('#cyd-file').click()});
+on('#cyd-file','change',function(e){
+  var f=e.target.files[0];if(!f)return;var rd=new FileReader();
+  rd.onload=function(){try{
+    var v=JSON.parse(rd.result),inc=Array.isArray(v)?v:(v.bookings||[v]),all=load(),seen={};
+    all.forEach(function(x){seen[x.id]=1});
+    var added=0;inc.forEach(function(x){if(x&&x.id&&!seen[x.id]){all.push(x);added++}});
+    all.sort(function(x,y){return (x.date+x.time).localeCompare(y.date+y.time)});
+    save(all);renderRecords();render();alert('Imported '+added+' new booking'+(added===1?'':'s')+'.');
+  }catch(err){alert('Could not read that file: '+err.message)}};
+  rd.readAsText(f);e.target.value='';
+});
+
+/* pick up name and email handed over by the intake form */
+(function(){
+  try{
+    var q=new URLSearchParams(location.search);
+    if(q.get('name'))b.name=q.get('name');
+    if(q.get('email'))b.email=q.get('email');
+    if(q.get('phone'))b.phone=q.get('phone');
+    if(!b.name&&!b.email){
+      var p=JSON.parse(localStorage.getItem(PKEY)||'null');
+      if(p){b.name=b.name||p.name;b.email=b.email||p.email;b.phone=b.phone||p.phone;if(p.service)b.service=b.service||p.service}
+    }
+    if(!b.firsttime&&(b.name||b.email))b.firsttime='This is my first session';
+  }catch(e){}
+})();
+
+loadAvail();loadDraft();
+if(step===4)step=0;
+if(step>0&&!b.service)step=0;
+render();
+})();
+</script>
+{% endraw %}
+
+{% schema %}
+{ "name": "CYD 2027 Bookings", "settings": [] }
+{% endschema %}

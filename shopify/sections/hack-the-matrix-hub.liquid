@@ -1,0 +1,260 @@
+{%- comment -%}
+  Choose Your Destiny — Hack The Matrix hub
+  Paste into a page via Custom Liquid, or save as sections/hack-the-matrix-hub.liquid and add it in the customizer.
+  Scoped to #cyd-htm. No external scripts.
+
+  EDIT THESE before going live:
+{%- endcomment -%}
+{%- assign htm_book_url = '/products/hack-the-matrix-2026' -%}
+{%- assign htm_class_url = '/pages/2027-bookings' -%}
+{%- assign htm_discord_url = 'https://discord.gg/dgXjGTa7Q' -%}
+{%- assign htm_apparel_url = '/collections/hack-the-matrix' -%}
+{%- comment -%} Wallpapers: upload the files in shopify/wallpapers to Content → Files with these exact names. {%- endcomment -%}
+{%- assign htm_walls = 'cyd-htm-title.png,cyd-htm-31-codes.png,cyd-htm-day-01.jpg,cyd-htm-day-07.jpg,cyd-htm-day-13.jpg,cyd-htm-day-15.jpg,cyd-htm-day-22.jpg,cyd-htm-day-31.jpg' | split: ',' -%}
+
+<style>
+#cyd-htm{--ink:#0a0a0a;--ink7:#1c1c1c;--ink5:#3a3a3a;--paper:#fff;--paper1:#faf9f7;--paper2:#efeee9;--gold:#39d353;--goldl:#c8f7d2;--violet:#17753a;--blue:#17753a;--green:#39d353;--magenta:#17753a;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Assistant',-apple-system,'Segoe UI',sans-serif;box-sizing:border-box;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+#cyd-htm *,#cyd-htm *::before,#cyd-htm *::after{box-sizing:border-box}
+#cyd-htm h1,#cyd-htm h2,#cyd-htm h3,#cyd-htm p,#cyd-htm ol,#cyd-htm ul{margin:0;padding:0}
+#cyd-htm a{color:var(--violet)}#cyd-htm a:hover{color:var(--ink)}
+#cyd-htm .blocks{display:flex;height:8px}#cyd-htm .blocks i{flex:1}
+#cyd-htm .in{max-width:1200px;margin:0 auto;padding:0 24px}
+#cyd-htm .kick{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+#cyd-htm .h2{font:600 clamp(30px,4vw,44px)/1.05 var(--serif);text-wrap:balance}
+#cyd-htm .sub{color:var(--ink5);max-width:60ch;text-wrap:pretty}
+#cyd-htm .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;font:700 13px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;white-space:nowrap;border:2px solid var(--ink);background:var(--gold);color:var(--ink);box-shadow:4px 4px 0 var(--ink);transition:transform 120ms,box-shadow 120ms;cursor:pointer}
+#cyd-htm .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);color:var(--ink)}
+#cyd-htm .btn.ghost{background:transparent;color:var(--paper);border-color:var(--gold);box-shadow:4px 4px 0 var(--gold)}
+#cyd-htm .btn.ghost:hover{color:var(--gold)}
+#cyd-htm .btn.dark{background:var(--ink);color:var(--paper)}
+#cyd-htm .btn.dark:hover{color:var(--gold)}
+#cyd-htm .fill{background:var(--goldl);color:var(--ink);padding:0 6px;font-weight:700}
+/* hero */
+#cyd-htm .hero{background:var(--ink);color:var(--paper);padding:72px 0 64px;border-bottom:2px solid var(--gold)}
+#cyd-htm .hero .kick{color:var(--gold)}
+#cyd-htm .hero h1{font:600 clamp(48px,8vw,104px)/.92 var(--serif);margin:14px 0 20px;letter-spacing:-.01em}
+#cyd-htm .hero p{color:#d9d7d0;max-width:52ch;font-size:18px;text-wrap:pretty}
+#cyd-htm .jump{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:36px;padding-top:20px;border-top:1px solid #333}
+#cyd-htm .jump a{color:var(--paper);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;white-space:nowrap}
+#cyd-htm .jump a:hover{color:var(--gold)}
+#cyd-htm .cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px}
+/* sections */
+#cyd-htm section.s{padding:72px 0;border-bottom:2px solid var(--ink)}
+#cyd-htm section.s.alt{background:var(--paper1)}
+#cyd-htm .head{display:grid;gap:10px;margin-bottom:36px}
+#cyd-htm .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+#cyd-htm .card{background:var(--paper);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:28px}
+/* book */
+#cyd-htm .cover{aspect-ratio:3/4;background:var(--ink);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:28px;max-width:380px}#cyd-htm .cover .l1{color:var(--paper);font:italic 600 34px/1.1 var(--serif)}#cyd-htm .cover .rule{width:80px;height:2px;background:var(--gold)}#cyd-htm .cover .l2{color:var(--gold);font:800 24px/1.1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+#cyd-htm .cover img{width:100%;height:100%;object-fit:cover;display:block}
+#cyd-htm .list{display:grid;gap:10px;margin:20px 0 28px;list-style:none}
+#cyd-htm .list li{display:flex;gap:12px;align-items:baseline}
+#cyd-htm .list li::before{content:'';width:10px;height:10px;background:var(--gold);border:2px solid var(--ink);flex:none;transform:translateY(1px)}
+/* code of the day */
+#cyd-htm .code{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:6px 6px 0 var(--gold);text-align:center;padding:44px 28px}
+#cyd-htm .code .date{color:var(--gold)}
+#cyd-htm .code .num{font:600 clamp(40px,7vw,76px)/1 var(--serif);letter-spacing:.12em;margin:18px 0 14px;word-break:break-word}
+#cyd-htm .code .int{font:italic 22px/1.3 var(--serif);color:#e8e6df}
+#cyd-htm .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+#cyd-htm .steps div{border-top:4px solid var(--violet);padding-top:12px;font-size:15px}
+#cyd-htm .steps div:nth-child(2){border-color:#0a0a0a}#cyd-htm .steps div:nth-child(3){border-color:var(--green)}
+#cyd-htm .steps b{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+/* sessions */
+#cyd-htm .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+#cyd-htm .sess{display:flex;flex-direction:column;gap:10px}
+#cyd-htm .sess .tag{align-self:flex-start;padding:4px 8px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border:2px solid var(--ink)}
+#cyd-htm .sess h3{font:600 26px/1.1 var(--serif)}
+#cyd-htm .sess .price{font-weight:800;font-size:18px;margin-top:auto}
+/* apparel */
+#cyd-htm .shop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+#cyd-htm .item .ph{aspect-ratio:4/5;border:2px solid var(--ink);background:repeating-linear-gradient(135deg,var(--paper2) 0 10px,var(--paper1) 10px 20px);display:grid;place-items:center;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink5);margin-bottom:12px}
+#cyd-htm .item h3{font-size:16px;font-weight:700}
+#cyd-htm .item p{font-size:14px;color:var(--ink5)}
+/* exercise */
+#cyd-htm .ex{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px;align-items:start}
+#cyd-htm .timer{text-align:center;display:grid;gap:18px;justify-items:center}
+#cyd-htm .dot{width:180px;height:180px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;background:radial-gradient(circle,var(--ink) 0 10px,transparent 11px),var(--paper)}
+#cyd-htm .clock{font:600 52px/1 var(--serif);font-variant-numeric:tabular-nums}
+#cyd-htm .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#cyd-htm ol.num{display:grid;gap:12px;padding-left:22px;margin-top:18px}
+/* wallpapers */
+#cyd-htm .walls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+#cyd-htm .walls a{display:block;aspect-ratio:9/19.5;border:2px solid var(--ink);overflow:hidden;background:var(--ink)}
+#cyd-htm .walls img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 300ms}
+#cyd-htm .walls a:hover img{transform:scale(1.04)}
+/* community */
+#cyd-htm .comm{background:var(--ink);color:var(--paper)}
+#cyd-htm .comm .sub{color:#cfcdc6}
+#cyd-htm .comm .kick{color:var(--gold)}
+#cyd-htm .form{display:flex;gap:0;margin-top:20px;max-width:520px}
+#cyd-htm .form input[type=email]{flex:1;min-width:0;min-height:52px;padding:0 14px;font:inherit;font-size:16px;border:2px solid var(--gold);border-right:0;border-radius:0;background:var(--ink7);color:var(--paper)}
+#cyd-htm .form input:focus{outline:3px solid var(--violet);outline-offset:1px}
+#cyd-htm .form .btn{box-shadow:none;min-height:52px}
+#cyd-htm .ok{margin-top:14px;color:var(--gold);font-weight:700}
+#cyd-htm .note{font-size:13px;color:#a9a7a0;margin-top:10px}
+@media(max-width:900px){#cyd-htm .split,#cyd-htm .ex{grid-template-columns:minmax(0,1fr);gap:32px}#cyd-htm .grid3{grid-template-columns:minmax(0,1fr)}#cyd-htm .shop{grid-template-columns:repeat(2,minmax(0,1fr))}#cyd-htm .walls{grid-template-columns:repeat(3,minmax(0,1fr))}#cyd-htm .steps{grid-template-columns:minmax(0,1fr)}}
+#cyd-htm .walls:last-of-type{align-items:start}#cyd-htm .walls:last-of-type a{aspect-ratio:auto}#cyd-htm .walls:last-of-type img{height:auto;object-fit:contain}#cyd-htm .walls:last-of-type a:hover img{transform:none}
+</style>
+
+<div id="cyd-htm">
+<div class="blocks"><i style="background:#0a0a0a"></i><i style="background:#17753a"></i><i style="background:#39d353"></i><i style="background:#ffffff"></i><i style="background:#17753a"></i></div>
+
+<header class="hero"><div class="in">
+<div class="kick">Choose Your Destiny presents</div>
+<h1>Hack The<br>Matrix</h1>
+<p>Everything in one place: the book, today's code, the weekly exercise, sessions, wallpapers and the community. Start anywhere.</p>
+<div class="cta"><a class="btn" href="#htm-join">Get the daily email</a><a class="btn ghost" href="#htm-code">Today's code</a></div>
+<nav class="jump" aria-label="On this page"><a href="#htm-book">The book</a><a href="#htm-code">Daily code</a><a href="#htm-ex">Exercise</a><a href="#htm-class">Sessions</a><a href="#htm-shop">Apparel</a><a href="#htm-walls">Wallpapers</a><a href="#htm-join">Community</a></nav>
+</div></header>
+
+<section class="s" id="htm-book"><div class="in split">
+<div class="cover" role="img" aria-label="The Metaphysical Dayplanner: Hack The Matrix"><div class="l1">The Metaphysical Dayplanner</div><div class="rule"></div><div class="l2">Hack The Matrix</div></div>
+<div>
+<div class="kick" style="color:var(--violet)">The book</div>
+<h2 class="h2" style="margin:10px 0 14px">The Metaphysical Dayplanner</h2>
+<p class="sub">Your current reality is a construct—a system of rules, limitations, and noise. But what if you could see the code? What if you could rewrite it for harmony, purpose, and ultimate freedom?</p>
+<ul class="list"><li>Paperback</li><li>Early digital access</li><li>Tote bag</li></ul>
+<a class="btn" href="{{ htm_book_url }}">Get the Deluxe Edition</a>
+</div>
+</div></section>
+
+<section class="s alt" id="htm-code"><div class="in">
+<div class="head"><div class="kick" style="color:var(--violet)">Daily Grabovoi code</div><h2 class="h2">Today's code sequence</h2></div>
+<div class="card code">
+<div class="kick date" data-htm-date>Today</div>
+<div class="num" data-htm-num>[CODE]</div>
+<div class="kick" style="color:var(--gold);margin-bottom:14px" data-htm-sec></div><div class="int" data-htm-int>[Intention for the day]</div>
+</div>
+<div class="steps"><div><b>1 · Write</b>Write the numbers by hand once.</div><div><b>2 · Seat</b>Close your eyes and settle into your soul's seat.</div><div><b>3 · See</b>Picture the sequence glowing while you repeat the intention for three minutes.</div></div>
+</div></section>
+
+<section class="s" id="htm-ex"><div class="in ex">
+<div>
+<div class="kick" style="color:var(--blue)">This week's concentration exercise</div>
+<h2 class="h2" style="margin:10px 0 14px" data-htm-ex-title>[Exercise title]</h2>
+<p class="sub" data-htm-ex-body>[Short description of the exercise, from the book]</p>
+<ol class="num" data-htm-ex-steps><li>[Step one]</li><li>[Step two]</li><li>[Step three]</li></ol>
+</div>
+<div class="card timer">
+<div class="dot" aria-hidden="true"></div>
+<div class="clock" data-htm-clock>3:00</div>
+<div class="row"><button type="button" class="btn" data-htm-start>Start</button><button type="button" class="btn dark" data-htm-reset>Reset</button></div>
+<div class="row" role="group" aria-label="Length"><button type="button" class="btn dark" data-htm-len="60">1 min</button><button type="button" class="btn dark" data-htm-len="180">3 min</button><button type="button" class="btn dark" data-htm-len="300">5 min</button></div>
+</div>
+</div></section>
+
+<section class="s alt" id="htm-class"><div class="in">
+<div class="head"><div class="kick" style="color:var(--green)">Sessions</div><h2 class="h2">Work with Vic</h2><p class="sub">Book from the 2027 calendar. Details are captured on your order.</p></div>
+<div class="grid3">
+<div class="card sess"><span class="tag" style="background:var(--goldl)">Class</span><h3>Hack The Matrix class</h3><p class="sub">Full access to the 30/31-day course, depending on the month.</p><div class="price">$33</div><a class="btn" href="{{ htm_class_url }}">Book</a></div>
+<div class="card sess"><span class="tag" style="background:#c8f7d2">1:1</span><h3>Energy coaching</h3><p class="sub">[One-line description]</p><div class="price">From $30</div><a class="btn" href="{{ htm_class_url }}">Book</a></div>
+<div class="card sess"><span class="tag" style="background:#c8f7d2">1:1</span><h3>Consultation</h3><p class="sub">[One-line description]</p><div class="price">Up to $120</div><a class="btn" href="{{ htm_class_url }}">Book</a></div>
+</div>
+</div></section>
+
+<section class="s" id="htm-shop"><div class="in">
+<div class="head"><div class="kick" style="color:var(--magenta)">Apparel</div><h2 class="h2">The Hack The Matrix line</h2><p class="sub">Coming soon.</p></div>
+<div class="shop">
+<div class="item"><div class="ph">Design 1</div><h3>[Product]</h3><p>[Price]</p></div>
+<div class="item"><div class="ph">Design 2</div><h3>[Product]</h3><p>[Price]</p></div>
+<div class="item"><div class="ph">Design 3</div><h3>[Product]</h3><p>[Price]</p></div>
+<div class="item"><div class="ph">Design 4</div><h3>[Product]</h3><p>[Price]</p></div>
+</div>
+<div style="margin-top:28px"><a class="btn dark" href="{{ htm_apparel_url }}">Shop the line</a></div>
+</div></section>
+
+<section class="s alt" id="htm-walls"><div class="in">
+<div class="head"><div class="kick" style="color:var(--violet)">Free</div><h2 class="h2">Phone wallpapers</h2><p class="sub">Tap one to open it full size, then save it to your phone.</p></div>
+<div class="walls">
+{%- for w in htm_walls -%}<a href="{{ w | file_url }}" target="_blank" rel="noopener" download><img src="{{ w | file_img_url: '400x' }}" alt="Choose Your Destiny wallpaper" loading="lazy" width="400" height="867"></a>{%- endfor -%}
+</div>
+</div></section>
+
+<section class="s comm" id="htm-join"><div class="in split">
+<div>
+<div class="kick">Daily email</div>
+<h2 class="h2" style="margin:10px 0 14px">Get the code in your inbox</h2>
+<p class="sub">One short email each morning: a lesson, a code or a Dayplanner prompt.</p>
+{%- form 'customer', id: 'htm-signup', class: 'form' -%}
+<input type="hidden" name="contact[tags]" value="newsletter,hack-the-matrix">
+{%- if form.posted_successfully? -%}<p class="ok">You're in. Watch for tomorrow's email.</p>{%- else -%}
+<input type="email" name="contact[email]" placeholder="you@email.com" aria-label="Email" required autocomplete="email"><button class="btn" type="submit">Join</button>
+{%- endif -%}
+{%- endform -%}
+<p class="note">Unsubscribe anytime.</p>
+</div>
+<div>
+<div class="kick">Community</div>
+<h2 class="h2" style="margin:10px 0 14px">Join the Discord</h2>
+<p class="sub">Share your results, ask questions and practice with others.</p>
+<div class="cta"><a class="btn ghost" href="{{ htm_discord_url }}" target="_blank" rel="noopener">Open Discord</a></div>
+</div>
+</div></section>
+</div>
+
+<script>
+(function(){
+  var root=document.getElementById('cyd-htm');if(!root)return;
+  /* Day of the month = book day (Day 1 on the 1st … Day 31 on the 31st). */
+  var CODES=[
+    {num:'1845421',sec:'845132489',intent:'Day 1 · Foundation: from this single, anchored point, you can construct any reality.'},
+    {num:'1853125',sec:'849995120',intent:'Day 2 · Precision Focus / Reality Molding'},
+    {num:'5142587',sec:'421954321',intent:'Day 3 · Reflected Reality / World Selection'},
+    {num:'5194726',sec:'715043769',intent:'Day 4 · Data Sphere / Unified Worldconstruct'},
+    {num:'1084321',sec:'194321054',intent:'Day 5 · Network Resonance / Co-Creator Sync'},
+    {num:'1954837',sec:'194321099',intent:'Day 6 · Remote Rendering / Null Zone Protocol'},
+    {num:'1485321',sec:'991843288',intent:'Day 7 · Cloud Compute / Universal Alignment'},
+    {num:'1543218',sec:'984301267',intent:'Day 8 · Causal Chain Rewrite / Eternity Creation'},
+    {num:'1843210',sec:'918921452',intent:'Day 9 · Range Compression / Unified Impulse'},
+    {num:'1854312',sec:'894153210',intent:'Day 10 · Batch Processing / The Tenfold Action'},
+    {num:'1852348',sec:'561432001',intent:'Day 11 · Interspecies Bridge / The Embodied World'},
+    {num:'1854321',sec:'485321489',intent:'Day 12 · Restore Point / Holistic Integrity'},
+    {num:'1538448',sec:'154321915',intent:'Day 13 · Structural Analysis / Creator\'s Blueprint'},
+    {num:'5831421',sec:'999888776',intent:'Day 14 · Causality Analysis / The Light of Source'},
+    {num:'7788001',sec:'532145891',intent:'Day 15 · Precision Calibration / The Love Protocol'},
+    {num:'1843212',sec:'123567091',intent:'Day 16 · Sensory Immersion / The Harmony of Change'},
+    {num:'1045421',sec:'891000111',intent:'Day 17 · Macro Cosmic Alignment / The Path of Eternity'},
+    {num:'1854212',sec:'185321945',intent:'Day 18 · Objective Meaning / Transcending Resistance'},
+    {num:'1254312',sec:'158431985',intent:'Day 19 · Entropy Reversal / The Eternal Instant'},
+    {num:'1538416',sec:'891543219',intent:'Day 20 · Distant Awakening / The Steward'},
+    {num:'8153517',sec:'589148542',intent:'Day 21 · Reverse Temporal Stream / The Architect\'s Hand'},
+    {num:'8153485',sec:'198516789',intent:'Day 22 · Perpetual Creation / The Architecture of Love'},
+    {num:'8154574',sec:'581974321',intent:'Day 23 · Divine Actualization / The Unified Field'},
+    {num:'5184325',sec:'189543210',intent:'Day 24 · Form Transmutation / The Love Imperative'},
+    {num:'1890000',sec:'012459999',intent:'Day 25 · Combinatorial Logic / The Eternal Observer'},
+    {num:'1584321',sec:'485617891',intent:'Day 26 · Holonic Perception / The Eternity Engine'},
+    {num:'1854342',sec:'185431201',intent:'Day 27 · Dynamic Evolution / The Ecology of Help'},
+    {num:'1854512',sec:'195814210',intent:'Day 28 · Recursive Evolution / The Creator\'s Gaze'},
+    {num:'1852142',sec:'512942180',intent:'Day 29 · Synthesis Sphere / The Eternal Platform'},
+    {num:'1852143',sec:'185219351',intent:'Day 30 · Harmonic Foundation / The Unity Cycle'},
+    {num:'1532106',sec:'185214321',intent:'Day 31 · Volumetric Unity / The Eternal Affirmation'}
+  ];
+  /* One entry per week; rotates every Monday. */
+  var EXERCISES=[
+    {title:'Day 1 · The Foundation',body:'From this single, anchored point, you can construct any reality. You are building from the ground up, literally.',steps:['Concentrate on the sole of your right foot.','At the same time, visualize your desired outcome in your mind\'s eye.','Run this hack multiple times today to solidify your connection.']},
+    {title:'Day 2 · Precision Focus / Reality Molding',body:'Today\'s hack moves your focus from the macro (your foundation) to the micro (a single point of precise control).',steps:['Concentrate on the little finger of your right hand.','Execute once, twice, or ten times today. Each session can be as long or as short as your intuition dictates.','Trust your intuition. It is your direct line to the Source Code.']},
+    {title:'Day 3 · Reflected Reality / World Selection',body:'Use the natural world as a bio-organic interface. Your target is a flower or plant of your choice.',steps:['Direct Link: use a physical plant as a visual anchor for your projection.','Internal Simulation: visualize the plant in your mind and use it as your projection surface. The effect is identical.','Scan the reality around you, then select the world that aligns with your core mission.']},
+    {title:'Day 4 · Data Sphere / Unified Worldconstruct',body:'Crystals, stones, and even grains of sand are nature\'s original data storage devices. Use them as a core to build a reality sphere.',steps:['Observe the flow: each technique leads into the next, like steps in a walk.','Create the World as if it has always been a single, continuous entity.','Manifest the integrated reality.']},
+    {title:'Day 5 · Network Resonance / Co-Creator Sync',body:'Every interaction you have with the Matrix alters its code, creating a chain of cause and effect.',steps:['Trace the ripple effect of an interaction.','Hold your desired outcome in your mind while targeting the echo of that interaction.','Perceive the fundamental binaries: the sky implies the Earth; the Earth implies the sky.']},
+    {title:'Day 6 · Remote Rendering / Null Zone Protocol',body:'Project your consciousness beyond local space-time, using the perception of distance as a targeting system.',steps:['Direct Link: physically observe distant objects as anchor points for your focus.','Internal Simulation: visualize a distant location with maximum clarity.','Null Zone: to quarantine an unfavorable situation at a location, unfocus your consciousness there.']},
+    {title:'Day 7 · Cloud Compute / Universal Alignment',body:'Leverage distant natural objects as external processing units for rapid manifestation.',steps:['Access distributed processing network: physically observe a distant cloud, leaf, or other natural object, or visualize one with perfect clarity in your mind\'s eye.','Upload desired event: project the data of your desired event or result onto this distant object in your awareness. See your intention taking form on the cloud or leaf.','Execute harmonious compilation: natural objects carry no destructive code, ensuring harmonious implementation of your desired reality.']}
+  ];
+  var d=new Date(),start=new Date(d.getFullYear(),0,0),day=Math.floor((d-start)/864e5),week=Math.floor((day+new Date(d.getFullYear(),0,1).getDay()-1)/7);
+  var q=function(s){return root.querySelector(s)};
+  var c=CODES[(d.getDate()-1)%CODES.length],e=EXERCISES[week%EXERCISES.length];
+  q('[data-htm-date]').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  var sp=function(n){return n.split('').join(' ')};q('[data-htm-num]').textContent=sp(c.num);q('[data-htm-sec]').textContent='Secondary · '+sp(c.sec);q('[data-htm-int]').textContent=c.intent;
+  q('[data-htm-ex-title]').textContent=e.title;q('[data-htm-ex-body]').textContent=e.body;
+  var ol=q('[data-htm-ex-steps]');ol.innerHTML='';e.steps.forEach(function(s){var li=document.createElement('li');li.textContent=s;ol.appendChild(li)});
+  var len=180,left=len,t=null,clock=q('[data-htm-clock]'),btn=q('[data-htm-start]');
+  function draw(){clock.textContent=Math.floor(left/60)+':'+('0'+left%60).slice(-2)}
+  function stop(){clearInterval(t);t=null;btn.textContent='Start'}
+  btn.addEventListener('click',function(){if(t){stop();return}if(!left)left=len;btn.textContent='Pause';t=setInterval(function(){left--;draw();if(left<=0){stop();clock.textContent='Done'}},1000)});
+  q('[data-htm-reset]').addEventListener('click',function(){stop();left=len;draw()});
+  root.querySelectorAll('[data-htm-len]').forEach(function(b){b.addEventListener('click',function(){stop();len=left=+b.getAttribute('data-htm-len');draw()})});
+})();
+</script>
+
+{% schema %}
+{"name":"Hack The Matrix hub","tag":"section","class":"cyd-htm-section","settings":[],"presets":[{"name":"Hack The Matrix hub"}]}
+{% endschema %}

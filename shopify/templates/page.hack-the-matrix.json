@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "hack-the-matrix-hub",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

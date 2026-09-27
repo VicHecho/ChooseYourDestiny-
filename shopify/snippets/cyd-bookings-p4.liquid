@@ -1,0 +1,145 @@
+{% raw %}    'UID:'+(r.id||'cyd')+'@chooseyourdestiny.us',
+    'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z',
+    'DTSTART:'+stamp(r.date,r.time),'DTEND:'+stamp(r.date,endTime(r.time,r.duration)),
+    'SUMMARY:Choose Your Destiny \u2014 '+(r.service||'Session'),
+    'DESCRIPTION:'+(r.duration||'')+' minute session with Vic Hecho. Times are '+avail.tz+'.',
+    'ORGANIZER;CN=Choose Your Destiny:mailto:'+ADVISOR_EMAIL,
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
+}
+
+function wire(){
+  body.querySelectorAll('[data-svc]').forEach(function(btn){btn.addEventListener('click',function(){
+    var s=SERVICES[+btn.dataset.svc];b.service=s.name;
+    if(s.durations.indexOf(b.duration)<0)b.duration=null;
+    saveDraft();render();
+  })});
+  body.querySelectorAll('[data-dur]').forEach(function(btn){btn.addEventListener('click',function(){b.duration=+btn.dataset.dur;saveDraft();render()})});
+  body.querySelectorAll('[data-date]').forEach(function(btn){btn.addEventListener('click',function(){b.date=btn.dataset.date;b.time=null;saveDraft();step=2;render()})});
+  body.querySelectorAll('[data-time]').forEach(function(btn){btn.addEventListener('click',function(){b.time=btn.dataset.time;saveDraft();step=3;render()})});
+  var pm=body.querySelector('#prevm');if(pm)pm.addEventListener('click',function(){if(month>0){month--;saveDraft();render()}});
+  var nm=body.querySelector('#nextm');if(nm)nm.addEventListener('click',function(){if(month<11){month++;saveDraft();render()}});
+  body.querySelectorAll('[data-go]').forEach(function(btn){btn.addEventListener('click',function(){
+    collect();var dir=+btn.dataset.go;
+    if(dir>0&&!validate())return;
+    step=Math.max(0,Math.min(4,step+dir));render();
+  })});
+  body.querySelectorAll('input,select,textarea').forEach(function(el){el.addEventListener('change',collect)});
+  var c=body.querySelector('#confirm');if(c)c.addEventListener('click',function(){collect();if(validate())confirmBooking()});
+  var ic=body.querySelector('#ics');if(ic)ic.addEventListener('click',function(){dl('cyd-session-'+b.date+'.ics',icsFor(b),'text/calendar')});
+  var ag=body.querySelector('#again');if(ag)ag.addEventListener('click',function(){b={};step=0;render()});
+}
+
+/* ---- advisor panel (advisor build only) ---- */
+var adm=$('#cyd-admin');
+function on(sel,ev,fn){var e=$(sel);if(e)e.addEventListener(ev,fn)}
+if(MODE!=='advisor'){
+  [adm,$('#cyd-advisor'),$('#cyd-file')].forEach(function(e){if(e)e.remove()});
+  var fn=$('#cyd-footnote');
+  if(fn)fn.textContent='Your request is sent only to Choose Your Destiny. Nothing is stored on this site.';
+}
+
+function renderRecords(){
+  var all=load(),pending=all.filter(function(r){return !r.replied}).length;
+  $('#cyd-count').textContent=all.length+' booking'+(all.length===1?'':'s')+(pending?' \u00b7 '+pending+' awaiting your reply':'');
+  if(!all.length){$('#cyd-records').innerHTML='<div class="cyd-empty">No bookings on this device yet.</div>';return}
+  $('#cyd-records').innerHTML='<table class="cyd-tbl"><thead><tr><th>When</th><th>Client</th><th>Contact</th><th>Session</th><th></th></tr></thead><tbody>'+
+  all.map(function(r,i){return '<tr><td><b style="font-size:13px;letter-spacing:0;text-transform:none">'+esc(pretty(r.date))+'</b><div>'+esc(pretty12(r.time))+' \u2013 '+esc(pretty12(r.endTime||endTime(r.time,r.duration)))+'</div></td>'+
+  '<td>'+esc(r.name)+'<div style="color:#3a3a3a;font-size:11px">'+esc(r.firsttime||'')+'</div></td>'+
+  '<td>'+esc(r.email)+'<div>'+esc(r.phone||'')+'</div></td>'+
+  '<td>'+esc(r.service)+'<div>'+esc(r.duration)+' min</div></td>'+
+  '<td style="white-space:nowrap">'+(r.replied?'<button class="cyd-btn ghost sm" data-reply="'+i+'" title="Mark as awaiting reply">\u2713 Confirmed</button>':'<button class="cyd-btn sm" data-reply="'+i+'" title="Mark as confirmed">Needs reply</button>')+' <button class="cyd-btn ghost sm" data-mail="'+i+'">Email</button> <button class="cyd-btn ghost sm" data-ics="'+i+'">ICS</button> <button class="cyd-btn ghost sm" data-del="'+i+'">Delete</button></td></tr>'}).join('')+'</tbody></table>';
+  $('#cyd-records').querySelectorAll('[data-reply]').forEach(function(bt){bt.addEventListener('click',function(){var all=load();all[+bt.dataset.reply].replied=!all[+bt.dataset.reply].replied;save(all);renderRecords()})});
+  $('#cyd-records').querySelectorAll('[data-mail]').forEach(function(bt){bt.addEventListener('click',function(){
+    var r=load()[+bt.dataset.mail];
+    var L=['Hi '+(r.name||'')+',','','Confirming our session:','',pretty(r.date),pretty12(r.time)+' \u2013 '+pretty12(r.endTime||endTime(r.time,r.duration))+' '+(r.timezone||avail.tz),(r.service||'')+' \u2014 '+(r.duration||'')+' minutes','','\u2014 Vic'];
+    window.location.href='mailto:'+encodeURIComponent(r.email||'')+'?subject='+encodeURIComponent('Confirming your session \u2014 '+pretty(r.date))+'&body='+encodeURIComponent(L.join('\n'));
+  })});
+  $('#cyd-records').querySelectorAll('[data-ics]').forEach(function(bt){bt.addEventListener('click',function(){var r=load()[+bt.dataset.ics];dl('cyd-session-'+slug(r.name)+'-'+r.date+'.ics',icsFor(r),'text/calendar')})});
+  $('#cyd-records').querySelectorAll('[data-del]').forEach(function(bt){bt.addEventListener('click',function(){var all=load(),r=all[+bt.dataset.del];if(confirm('Delete the booking for '+r.name+' on '+pretty(r.date)+'?')){all.splice(+bt.dataset.del,1);save(all);renderRecords();render()}})});
+}
+
+function renderAvailEditor(){
+  $('#cyd-availgrid').innerHTML=DOW.map(function(d,i){
+    var bands=TIERS.filter(function(tier){return (avail.days[i]||[]).some(function(t){return tierFor(t).key===tier.key})});
+    return '<div><label>'+d+'</label><input id="a_'+i+'" type="text" value="'+esc((avail.days[i]||[]).join(', '))+'" placeholder="closed">'+
+      '<div style="display:flex;gap:5px;margin-top:5px;min-height:8px">'+bands.map(function(tier){return '<s style="display:block;width:16px;height:6px;background:'+tier.color+'"></s>'}).join('')+'</div></div>';
+  }).join('');
+  $('#s_blocked').value=(avail.blocked||[]).join(', ');
+  $('#s_tz').value=avail.tz||'';
+}
+on('#cyd-avail','click',function(){
+  var s=$('#cyd-settings');s.classList.toggle('cyd-hide');
+  if(!s.classList.contains('cyd-hide'))renderAvailEditor();
+});
+on('#cyd-save-avail','click',function(){
+  var days={};
+  for(var i=0;i<7;i++){
+    days[i]=($('#a_'+i).value||'').split(',').map(function(t){return t.trim()})
+      .filter(function(t){return /^\d{1,2}:\d{2}$/.test(t)})
+      .map(function(t){var p=t.split(':');return pad(+p[0])+':'+p[1]})
+      .sort();
+  }
+  avail.days=days;
+  avail.blocked=($('#s_blocked').value||'').split(',').map(function(t){return t.trim()}).filter(function(t){return /^\d{4}-\d{2}-\d{2}$/.test(t)});
+  avail.tz=$('#s_tz').value.trim()||'Eastern Time (ET)';
+  try{localStorage.setItem(AKEY,JSON.stringify(avail))}catch(e){alert('Could not save: '+e.message)}
+  $('#cyd-saved').textContent='Saved.';setTimeout(function(){$('#cyd-saved').textContent=''},2500);
+  render();
+});
+on('#cyd-advisor','click',function(){adm.classList.toggle('cyd-hide');if(!adm.classList.contains('cyd-hide'))renderRecords()});
+on('#cyd-close','click',function(){adm.classList.add('cyd-hide')});
+on('#cyd-db','click',function(){
+  var all=load();
+  if(!all.length)return alert('No bookings to compile yet.');
+  dl('cyd-bookings-'+YEAR+'-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({
+    database:'Choose Your Destiny \u2014 '+YEAR+' bookings',
+    generatedAt:new Date().toISOString(),
+    bookingCount:all.length,
+    timezone:avail.tz,
+    availability:avail,
+    bookings:all
+  },null,2));
+});
+on('#cyd-csv','click',function(){
+  var all=load();if(!all.length)return alert('No bookings to export.');
+  var cols=['id','createdAt','date','time','endTime','timezone','tier','tierLabel','duration','service','fee','book','name','email','phone','firsttime','notes','status','replied'];
+  function cell(v){if(v===true)v='yes';if(v===false)v='no';v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"'}
+  dl('cyd-bookings-'+YEAR+'-'+new Date().toISOString().slice(0,10)+'.csv',
+    '\ufeff'+cols.join(',')+'\r\n'+all.map(function(r){return cols.map(function(c){return cell(r[c])}).join(',')}).join('\r\n'),'text/csv');
+});
+on('#cyd-import','click',function(){$('#cyd-file').click()});
+on('#cyd-file','change',function(e){
+  var f=e.target.files[0];if(!f)return;var rd=new FileReader();
+  rd.onload=function(){try{
+    var v=JSON.parse(rd.result),inc=Array.isArray(v)?v:(v.bookings||[v]),all=load(),seen={};
+    all.forEach(function(x){seen[x.id]=1});
+    var added=0;inc.forEach(function(x){if(x&&x.id&&!seen[x.id]){all.push(x);added++}});
+    all.sort(function(x,y){return (x.date+x.time).localeCompare(y.date+y.time)});
+    save(all);renderRecords();render();alert('Imported '+added+' new booking'+(added===1?'':'s')+'.');
+  }catch(err){alert('Could not read that file: '+err.message)}};
+  rd.readAsText(f);e.target.value='';
+});
+
+/* pick up name and email handed over by the intake form */
+(function(){
+  try{
+    var q=new URLSearchParams(location.search);
+    if(q.get('name'))b.name=q.get('name');
+    if(q.get('email'))b.email=q.get('email');
+    if(q.get('phone'))b.phone=q.get('phone');
+    if(!b.name&&!b.email){
+      var p=JSON.parse(localStorage.getItem(PKEY)||'null');
+      if(p){b.name=b.name||p.name;b.email=b.email||p.email;b.phone=b.phone||p.phone;if(p.service)b.service=b.service||p.service}
+    }
+    if(!b.firsttime&&(b.name||b.email))b.firsttime='This is my first session';
+  }catch(e){}
+})();
+
+loadAvail();loadDraft();
+if(step===4)step=0;
+if(step>0&&!b.service)step=0;
+render();
+})();
+</script>
+{% endraw %}
+

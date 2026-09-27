@@ -1,0 +1,110 @@
+{% raw %}  '<td><b style="font-size:13px;letter-spacing:0;text-transform:none">'+esc(r.name)+'</b></td>'+
+  '<td>'+esc(r.email)+'<div>'+esc(r.phone)+'</div></td>'+
+  '<td>'+esc((r.services||[]).join(', '))+'</td>'+
+  '<td style="white-space:nowrap"><button class="cyd-btn ghost sm" data-rec="'+i+'">JSON</button> <button class="cyd-btn ghost sm" data-del="'+i+'">Delete</button></td></tr>'}).join('')+'</tbody></table>';
+  $('#cyd-records').querySelectorAll('[data-rec]').forEach(function(b){b.addEventListener('click',function(){var r=load()[+b.dataset.rec];dl('cyd-intake-'+slug(r.name)+'-'+r.id+'.json',JSON.stringify(r,null,2))})});
+  $('#cyd-records').querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){var all=load(),r=all[+b.dataset.del];if(confirm('Delete the record for '+r.name+'? This cannot be undone.')){all.splice(+b.dataset.del,1);save(all);renderRecords()}})});
+}
+on('#cyd-terms','click',function(){
+  var s=$('#cyd-settings');s.classList.toggle('cyd-hide');
+  if(!s.classList.contains('cyd-hide'))TERMFIELDS.forEach(function(k){$('#s_'+k).value=terms[k]||''});
+});
+on('#cyd-save-terms','click',function(){
+  TERMFIELDS.forEach(function(k){terms[k]=$('#s_'+k).value.trim()});
+  try{localStorage.setItem(SKEY,JSON.stringify(terms))}catch(e){alert('Could not save: '+e.message)}
+  $('#cyd-saved').textContent='Saved.';setTimeout(function(){$('#cyd-saved').textContent=''},2500);
+  if(step===3)render();
+});
+on('#cyd-advisor','click',function(){adm.classList.toggle('cyd-hide');if(!adm.classList.contains('cyd-hide')){renderRecords();adm.scrollIntoView&&0}});
+on('#cyd-close','click',function(){adm.classList.add('cyd-hide')});
+on('#cyd-json','click',function(){dl('cyd-all-records-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(load(),null,2))});
+on('#cyd-csv','click',function(){
+  var all=load();if(!all.length)return alert('No records to export.');
+  var cols=['id','submittedAt','name','preferred','email','phone','social','found','addr1','addr2','city','state','zip','country','services','bdate','btime','bplace','exp','intent','dates','budget','health','support','a_media','a_news','signName','signDate','agreementVersion'];
+  function cell(v){if(Array.isArray(v))v=v.join('; ');if(v===true)v='yes';if(v===false)v='no';v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"'}
+  var csv=cols.join(',')+'\r\n'+all.map(function(r){return cols.map(function(c){return cell(r[c])}).join(',')}).join('\r\n');
+  dl('cyd-clients-'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+csv,'text/csv');
+});
+on('#cyd-db','click',function(){
+  var all=load();
+  if(!all.length)return alert('No records to compile yet.');
+  var db={
+    database:'Choose Your Destiny \u2014 client intake',
+    generatedAt:new Date().toISOString(),
+    recordCount:all.length,
+    agreementVersion:'1.0',
+    termsInForce:terms,
+    records:all
+  };
+  dl('cyd-database-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db,null,2));
+});
+on('#cyd-import','click',function(){$('#cyd-file').click()});
+on('#cyd-file','change',function(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var v=JSON.parse(r.result),inc=Array.isArray(v)?v:[v],all=load(),seen={};
+    all.forEach(function(x){seen[x.id]=1});
+    var added=0;inc.forEach(function(x){if(x&&x.id&&!seen[x.id]){all.push(x);added++}});
+    all.sort(function(a,b){return String(b.submittedAt).localeCompare(String(a.submittedAt))});
+    save(all);renderRecords();alert('Imported '+added+' new record'+(added===1?'':'s')+'.');
+  }catch(err){alert('Could not read that file: '+err.message)}};
+  r.readAsText(f);e.target.value='';
+});
+
+function applyTweaks(){
+  var r=document.getElementById('cyd-intake');
+  r.style.setProperty('--gold-500',TW.accent);
+  document.querySelector('.cyd-blocks').style.display=TW.showBlocks?'flex':'none';
+}
+
+/* ---- tweaks panel (plain JS, no external deps so the form stays offline) ---- */
+(function(){
+  var panel=document.getElementById('tw'),bd=document.getElementById('tw-bd');
+  function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+  function set(k,v){TW[k]=v;try{collect()}catch(e){}applyTweaks();render();
+    var edits={};edits[k]=v;
+    window.parent.postMessage({type:'__edit_mode_set_keys',edits:edits},'*');
+    window.dispatchEvent(new CustomEvent('tweakchange',{detail:edits}));
+  }
+  function section(l){bd.appendChild(el('div','sec',l))}
+  function color(key,label,options){
+    var r=el('div','row',''),g=el('div','sw');
+    r.appendChild(el('label','tg','<span>'+label+'</span>'));
+    options.forEach(function(o){
+      var b=el('button',TW[key]===o?'sel':'');b.style.background=o;b.title=o;
+      b.addEventListener('click',function(){set(key,o);g.querySelectorAll('button').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel')});
+      g.appendChild(b);
+    });
+    r.appendChild(g);r.querySelector('label').style.marginBottom='6px';bd.appendChild(r);
+  }
+  function toggle(key,label){
+    var r=el('div','row'),lb=el('label','tg','<span>'+label+'</span>'),i=el('input');
+    i.type='checkbox';i.checked=!!TW[key];
+    i.addEventListener('change',function(){set(key,i.checked)});
+    lb.appendChild(i);r.appendChild(lb);bd.appendChild(r);
+  }
+  section('Brand');
+  color('accent','Action color',['#f0c93e','#5c3a8f','#2f6fd1','#5fa858']);
+  toggle('showBlocks','Color-block strip');
+  section('Form');
+  toggle('showBudget','Ask for budget');
+  toggle('requireHealth','Require health notes');
+  window.addEventListener('message',function(e){
+    var t=e.data&&e.data.type;
+    if(t==='__activate_edit_mode')panel.classList.add('on');
+    else if(t==='__deactivate_edit_mode')panel.classList.remove('on');
+  });
+  window.parent.postMessage({type:'__edit_mode_available'},'*');
+  document.getElementById('tw-x').addEventListener('click',function(){
+    panel.classList.remove('on');
+    window.parent.postMessage({type:'__edit_mode_dismissed'},'*');
+  });
+})();
+
+loadTerms();loadDraft();
+if(step===5)step=0;
+applyTweaks();
+render();
+})();
+</script>
+{% endraw %}
+

@@ -1,0 +1,75 @@
+{% raw %}    field('health','Health, medication, or safety notes',area('health','Conditions, medications, pregnancy, seizure or photosensitivity history, recent surgery, anything affecting sleep if you are ordering subliminal audio, or anything else I should know. Write “none” if none apply.'),TW.requireHealth?'Required. Stored on my device only and never shared.':'Optional but strongly encouraged. Stored on my device only and never shared.',TW.requireHealth?1:0)+
+    field('support','Are you currently under the care of a doctor or therapist?','<div class="cyd-picks">'+['Yes','No','Prefer not to say'].map(function(o){return '<label class="cyd-pick'+(d.support===o?' sel':'')+'"><input type="radio" name="support" value="'+esc(o)+'"'+(d.support===o?' checked':'')+'><span>'+esc(o)+'</span></label>'}).join('')+'</div>','',0).replace('<label for="f_support">','<label>')+
+    '</div>'+
+    '<div class="cyd-note"><b>If you are in crisis, please stop here.</b> This service cannot help in an emergency. In the United States call or text 988 for the Suicide &amp; Crisis Lifeline, or call 911.</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===3)body.innerHTML=
+    '<h2 class="cyd-h">Consultation agreement.</h2><p class="cyd-sub">Please read this in full. It explains what this service is, what it is not, and the terms we are both agreeing to. Scrolling to the end unlocks the signing step.</p>'+
+    legalHTML()+
+    '<div class="cyd-readbar"><div class="cyd-readfill" id="readfill"></div></div>'+
+    '<div class="cyd-acks">'+
+    ack('a_all','I have read the agreement in full. I am 18 or older and signing voluntarily. I understand these services are for spiritual, personal insight, and entertainment purposes only and are not medical, psychological, legal, or financial advice, that no outcome is guaranteed, and that no practitioner-patient or attorney-client relationship is created. I accept responsibility for my own decisions, release Choose Your Destiny and Patrick Jones from liability as described above, agree not to record without written consent, accept the payment and cancellation terms, and consent to signing electronically.')+
+    ack('a_media','<b>Optional.</b> I grant permission to use anonymized excerpts of my testimonial or session content in marketing. This is not required to book.',1)+
+    '</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><span id="readhint" style="font-size:12px;color:var(--ink-500)"></span><button class="cyd-btn" id="tosign" data-go="1">Continue to sign</button></div>';
+
+  if(step===4)body.innerHTML=
+    '<h2 class="cyd-h">Sign and submit.</h2><p class="cyd-sub">Type your full legal name, draw your signature, and confirm the date.</p>'+
+    '<div class="cyd-sigwrap">'+
+    field('signName','Typed full legal name','<input id="f_signName" type="text" class="cyd-typed" value="'+esc(d.signName)+'" placeholder="Your name">','This typed name is your electronic signature.',1)+
+    field('signDate','Date',txt('signDate','date'),'',1)+
+    '</div>'+
+    '<div class="cyd-f full" data-f="sig" style="margin-top:24px"><label>Drawn signature <span class="req">*</span><div class="hint">Use a mouse, trackpad, or finger.</div></label><canvas class="cyd-canvas" id="sigpad"></canvas><div class="cyd-actions" style="margin-top:10px"><button class="cyd-btn ghost sm" id="sigclear">Clear signature</button></div></div>'+
+    reviewHTML()+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn dark" id="submit">Submit &amp; save record</button></div>';
+
+  if(step===5){
+    var msg = MODE==='advisor'
+      ? 'Your intake and signed agreement are saved on this device. I will reach out at <b>'+esc(d.email)+'</b> to confirm your session.'
+      : (SUBMIT_ENDPOINT
+          ? (d.deliveryFailed
+              ? 'Your copy has downloaded, but the intake could not be sent — you may be offline. Please use the button below to email it instead.'
+              : 'Your intake and signed agreement have been sent. A copy has downloaded to your device. I will reach out at <b>'+esc(d.email)+'</b> to confirm your session.')
+          : 'A copy of your intake has downloaded to your device. <b>Please send it to me using the button below</b> — attach the downloaded file to the email. I will reply at <b>'+esc(d.email)+'</b> to confirm your session.');
+    body.innerHTML='<div class="cyd-done"><div class="mark">&#10003;</div><h2 class="cyd-h">Thank you, '+esc(d.preferred||(d.name||'').split(' ')[0]||'friend')+'.</h2>'+
+    '<p class="cyd-sub" style="margin:0 auto">'+msg+'</p>'+
+    '<div class="cyd-actions" style="justify-content:center">'+
+    (MODE==='public'&&(!SUBMIT_ENDPOINT||d.deliveryFailed)?'<a class="cyd-btn" style="text-decoration:none" href="'+mailtoLink(d)+'">Email my intake</a>':'')+
+    '<button class="cyd-btn'+(MODE==='public'&&(!SUBMIT_ENDPOINT||d.deliveryFailed)?' ghost':'')+'" id="dlrec">Download my copy (JSON)</button><button class="cyd-btn ghost" id="print">Print / save agreement</button>'+
+    (MODE==='advisor'?'<button class="cyd-btn ghost" id="again">Start a new intake</button>':'')+
+    '</div></div>'+
+'<div class="cyd-actions cyd-noprint" style="justify-content:center;margin-top:8px"><a class="cyd-btn dark" style="text-decoration:none" href="'+bookingLink()+'">Book your first 2027 session</a></div>'+
+    '<p class="cyd-sub cyd-noprint" style="margin:12px auto 0;text-align:center;font-size:13px">My 2027 calendar is open now.</p>'+
+    '<div id="printable">'+legalHTML(true)+reviewHTML(true)+'</div>';
+  }
+  wire();
+  window.scrollTo(0,0);
+}
+
+function ack(id,text,opt){var on=!!d[id];return '<label class="cyd-ack'+(on?' sel':'')+(opt?' opt':'')+'" data-f="'+id+'"><input type="checkbox" data-ack="'+id+'"'+(on?' checked':'')+'><span>'+text+'</span></label>'}
+
+function legalHTML(forPrint){
+  var t=d.terms||terms;
+  var law=esc(t.jurisdiction||'the State of North Carolina');
+  var pay=t.payTerms?esc(t.payTerms):'<span class="fill">[Advisor: enter your deposit, balance, and refund terms in Advisor access &rarr; My Terms]</span>';
+  var canc=t.cancelTerms?esc(t.cancelTerms):'<span class="fill">[Advisor: enter your cancellation and no-show policy in Advisor access &rarr; My Terms]</span>';
+  var resc=t.rescheduleTerms?esc(t.rescheduleTerms):'<span class="fill">[Advisor: enter your rescheduling window in Advisor access &rarr; My Terms]</span>';
+  var cap=t.liabilityCap?esc(t.liabilityCap):'<span class="fill">[the total amount the Client actually paid for the service giving rise to the claim]</span>';
+  return '<div class="cyd-legal"'+(forPrint?' style="max-height:none;overflow:visible"':'')+'>'+
+  '<h3>1. The parties and the service</h3><p>This Consultation Agreement is entered into between Patrick Jones, also known as Vic Hecho, doing business as Choose Your Destiny (the &ldquo;Advisor&rdquo;), and the individual named below (the &ldquo;Client&rdquo;). It governs all readings, subliminal and custom audio, coaching, consultations, and related goods and services the Advisor provides (the &ldquo;Services&rdquo;).</p>'+
+  '<h3>2. Spiritual and entertainment purposes only</h3><p>All Services are provided for spiritual, personal insight, and entertainment purposes only. Divination, tarot, energy work, records work, and subliminal audio are not recognized sciences. The Client acknowledges that nothing said, written, recorded, or delivered by the Advisor is a statement of verifiable fact about the past, present, or future.</p>'+
+  '<h3>3. Not professional advice</h3><p>The Advisor is not a physician, psychiatrist, psychologist, licensed therapist, attorney, accountant, or financial adviser, and does not provide medical, mental health, legal, tax, or financial advice. Nothing in the Services diagnoses, treats, cures, or prevents any condition. No doctor-patient, therapist-client, attorney-client, or fiduciary relationship is created by this Agreement. The Client agrees not to stop, start, or change any medication, treatment, or professional care on the basis of a session, and to consult a qualified licensed professional for those decisions.</p>'+
+  '<h3>4. No guarantee of results</h3><p>The Advisor makes no representation, warranty, or guarantee of any specific outcome, result, timeline, accuracy, or benefit. Individual experiences vary. Testimonials and examples are not promises of comparable results. Services are provided on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo; basis, and all implied warranties, including merchantability and fitness for a particular purpose, are disclaimed to the fullest extent permitted by law.</p>'+
+  '<h3>5. Age and capacity</h3><p>The Client represents that they are at least 18 years of age, of sound mind, not under the influence of any substance impairing judgment, and entering into this Agreement freely and voluntarily without coercion. Services are not offered to minors.</p>'+
+  '<h3>6. Client responsibility</h3><p>The Client retains sole and complete responsibility for all choices, decisions, actions, and inactions they take during or after any session, and for the consequences of those choices. The Client assumes all risk associated with participation in the Services. The Client further represents that the information provided in this intake is true and complete, and that withholding material health or safety information is at the Client&rsquo;s own risk.</p>'+
+  '<h3>7. Limitation of liability</h3><p>To the fullest extent permitted by law, the Advisor and Choose Your Destiny, along with their owners, contractors, and affiliates, shall not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, or for any lost profits, lost opportunity, emotional distress, or damages arising from the Client&rsquo;s reliance on the Services. The total aggregate liability of the Advisor for any claim arising out of or relating to this Agreement or the Services shall not exceed '+cap+'. Some jurisdictions do not allow certain limitations, so portions of this section may not apply to the Client.</p>'+
+  '<h3>8. Release and hold harmless</h3><p>The Client releases, waives, discharges, and agrees to hold harmless and indemnify the Advisor and Choose Your Destiny from and against any and all claims, demands, damages, losses, liabilities, costs, and expenses, including reasonable attorneys&rsquo; fees, arising out of or related to the Services, the Client&rsquo;s participation in them, or the Client&rsquo;s breach of this Agreement, except to the extent caused by the Advisor&rsquo;s own gross negligence or willful misconduct.</p>'+
+  '<h3>9. Confidentiality, both directions</h3><p>The Advisor will keep the content of sessions and the Client&rsquo;s personal information confidential and will not sell or disclose it, except where disclosure is required by law, is necessary to prevent imminent harm, or is expressly authorized by the Client. The Client likewise agrees to keep the Advisor&rsquo;s proprietary methods, materials, scripts, audio files, and session content confidential, and not to copy, resell, redistribute, or publicly post them without written permission. Because sessions are not legally privileged communications, the Client should not treat them as confidential in a legal proceeding.</p>'+
+  '<h3>10. Recording</h3><p>Neither party may audio record, video record, screen capture, or livestream any session without the other party&rsquo;s prior written consent. Unauthorized recording is a material breach of this Agreement and grounds for immediate termination without refund.</p>'+
+  '<h3>11. Intellectual property</h3><p>All subliminal audio, written materials, artwork, and recordings the Advisor provides remain the intellectual property of Choose Your Destiny and are licensed to the Client for personal, non-commercial, non-transferable use only.</p>'+
+  '<h3>12. Payment, deposits, and refunds</h3><p>'+pay+'</p>'+
+  '<h3>13. Cancellation and no-shows</h3><p>'+canc+'</p>'+
+  '<h3>14. Rescheduling</h3><p>'+resc+'</p>'+
+  '<h3>15. Conduct and right to refuse or end a session</h3><p>Both parties agree to conduct themselves respectfully. The Advisor reserves the sole right to decline, pause, or immediately end any session or working relationship, with or without cause, including where the Client is abusive, harassing, discriminatory, intoxicated, in acute crisis requiring licensed care, or requesting services the Advisor does not provide. Where the Advisor ends a session without cause, a prorated refund will be issued; where a session is ended because of the Client&rsquo;s conduct, no refund is owed.</p>'+
+{% endraw %}

@@ -1,0 +1,119 @@
+{%- comment -%}
+  CYD footer restyle. Render this once, immediately after the stylesheet tags at the top
+  of sections/footer.liquid:
+
+      {% render 'cyd-footer-style' %}
+
+  Everything is scoped under .footer, so nothing here can affect the rest of the page.
+  No structural change: blocks, newsletter form, localization, payment icons and
+  policy links all stay exactly as Dawn builds them.
+{%- endcomment -%}
+{%- style -%}
+  .footer{
+    --cyd-ink:#0a0a0a;--cyd-paper:#faf9f7;--cyd-gold:#f0c93e;--cyd-violet:#5c3a8f;
+    --cyd-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    --cyd-serif:'Cormorant Garamond',Georgia,serif;
+    background:var(--cyd-ink);color:var(--cyd-paper);
+    border-top:2px solid var(--cyd-gold);
+  }
+  .footer .footer__content-top{padding-bottom:4rem}
+  .footer a,.footer .link,.footer small,.footer .rte{color:var(--cyd-paper)}
+  .footer a:hover{color:var(--cyd-gold)}
+
+  /* block headings: serif, the one place the footer softens */
+  .footer .footer-block__heading{
+    font-family:var(--cyd-serif);font-size:2.4rem;font-weight:600;letter-spacing:0;
+    color:var(--cyd-paper);margin:0 0 1.6rem;padding-bottom:1.2rem;
+    border-bottom:1px solid rgba(240,201,62,.3);
+  }
+
+  /* menu columns: uppercase Inter, gold rule wipes in on hover */
+  .footer .footer-block--menu .list-menu__item--link,
+  .footer .footer-block__details-content .list-menu__item--link{
+    position:relative;font-family:var(--cyd-sans);font-size:1.2rem;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;text-decoration:none;
+    padding:.7rem 0;display:inline-block;
+  }
+  .footer .list-menu__item--link::after{
+    content:'';position:absolute;left:0;right:0;bottom:.3rem;height:2px;background:var(--cyd-gold);
+    transform:scaleX(0);transform-origin:left;transition:transform 220ms cubic-bezier(.2,.8,.2,1);
+  }
+  .footer .list-menu__item--link:hover::after,
+  .footer .list-menu__item--active::after{transform:scaleX(1)}
+  .footer .list-menu__item--link:hover{text-decoration:none}
+
+  /* body copy in text blocks */
+  .footer .footer-block__details-content.rte,
+  .footer .footer-block__brand-info .rte{
+    font-family:var(--cyd-sans);font-size:1.4rem;line-height:1.7;color:var(--cyd-paper);
+  }
+
+  /* newsletter: hard-edged box, gold submit */
+  .footer .footer-block__newsletter .footer-block__heading{font-size:2.8rem}
+  .footer .newsletter-form__field-wrapper .field{border-radius:0}
+  .footer .newsletter-form__field-wrapper .field__input{
+    border-radius:0;border:2px solid var(--cyd-paper);background:transparent;
+    color:var(--cyd-paper);font-family:var(--cyd-sans);font-size:1.4rem;box-shadow:none;
+  }
+  .footer .newsletter-form__field-wrapper .field:before,
+  .footer .newsletter-form__field-wrapper .field:after{box-shadow:none;border:0}
+  .footer .newsletter-form__field-wrapper .field__label{
+    color:var(--cyd-paper);font-family:var(--cyd-sans);font-size:1.2rem;
+    letter-spacing:.12em;text-transform:uppercase;
+  }
+  .footer .newsletter-form__button{
+    border-radius:0;background:var(--cyd-gold);color:var(--cyd-ink);
+    width:4.8rem;height:100%;border:2px solid var(--cyd-gold);
+  }
+  .footer .newsletter-form__button:hover{background:var(--cyd-paper);border-color:var(--cyd-paper)}
+  .footer .newsletter-form__button .svg-wrapper{color:var(--cyd-ink)}
+  .footer .newsletter-form__message{color:var(--cyd-gold);font-family:var(--cyd-sans)}
+
+  /* social + payment icons */
+  .footer .footer__list-social{gap:1.2rem;margin-top:2rem}
+  .footer .footer__list-social .list-social__link{
+    color:var(--cyd-paper);border:2px solid rgba(250,249,247,.35);border-radius:0;
+    width:4.2rem;height:4.2rem;transition:border-color 180ms,color 180ms;
+  }
+  .footer .footer__list-social .list-social__link:hover{color:var(--cyd-gold);border-color:var(--cyd-gold)}
+  .footer .list-payment__item{filter:none}
+
+  /* bottom bar */
+  .footer .footer__content-bottom{
+    border-top:1px solid rgba(240,201,62,.3);margin-top:2rem;padding-top:2.4rem;
+  }
+  .footer .footer__copyright,.footer .policies{
+    font-family:var(--cyd-sans);font-size:1.2rem;letter-spacing:.06em;
+  }
+  .footer .policies .copyright__content a{text-decoration:none;text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+  .footer .policies .copyright__content a:hover{color:var(--cyd-gold);text-decoration:underline;text-underline-offset:.4rem}
+
+  /* localization selects: square, bordered */
+  .footer .localization-form__select,
+  .footer .localization-form .button{
+    border-radius:0;border:2px solid rgba(250,249,247,.35);color:var(--cyd-paper);
+    font-family:var(--cyd-sans);font-size:1.2rem;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .footer .localization-form__select:hover{border-color:var(--cyd-gold)}
+  .footer .disclosure__list{
+    background:var(--cyd-ink);border:2px solid var(--cyd-gold);border-radius:0;
+    box-shadow:8px 8px 0 rgba(0,0,0,.6);
+  }
+  .footer .disclosure__link{color:var(--cyd-paper);font-family:var(--cyd-sans);font-size:1.3rem}
+  .footer .disclosure__link:hover{color:var(--cyd-gold)}
+  .footer .caption-large{font-family:var(--cyd-sans);font-size:1.2rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyd-paper)}
+
+  /* brand image sits on black, so the white wordmark is the right file here */
+  .footer .footer-block__image-wrapper img{filter:none}
+
+  {%- comment -%} Mobile menu drawer: keep Log in visible above the phone browser toolbar {%- endcomment -%}
+  .js .section-header .menu-drawer{height:calc(100dvh - var(--header-bottom-position,100%))}
+  .section-header .menu-drawer__navigation-container{display:flex;flex-direction:column;height:100%;overflow-y:auto}
+  .section-header .menu-drawer__navigation{flex:0 0 auto}
+  .section-header .menu-drawer__utility-links{margin-top:auto;padding:2rem 3rem calc(3rem + env(safe-area-inset-bottom))}
+  .section-header .menu-drawer__account{display:inline-flex;align-items:center;gap:1rem;padding:1.2rem 0;color:#faf9f7 !important;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;text-transform:uppercase;letter-spacing:.12em;font-size:1.4rem;font-weight:600;text-decoration:none}
+  .section-header .menu-drawer__account svg,.section-header .menu-drawer__account .svg-wrapper{color:#faf9f7 !important;fill:currentColor;width:2.2rem;height:2.2rem}
+  .section-header .menu-drawer__account:hover,.section-header .menu-drawer__account:hover svg{color:#f0c93e !important}
+  .section-header .menu-drawer__utility-links .list-social__link{color:#faf9f7}
+  .section-header .menu-drawer__utility-links .list-social__link:hover{color:#f0c93e}
+{%- endstyle -%}

@@ -1,0 +1,140 @@
+{% raw %}.cyd-foot{max-width:1200px;margin:0 auto;padding:0 var(--sp5) var(--sp6);font-size:12px;color:var(--ink-500);display:flex;gap:var(--sp4);justify-content:space-between;flex-wrap:wrap}
+.cyd-foot button{background:none;border:0;color:var(--ink-500);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+.cyd-foot button:hover{color:var(--ink-900)}
+.cyd-hide{display:none!important}
+@media(max-width:700px){.cyd-grid,.cyd-picks{grid-template-columns:minmax(0,1fr)}.cyd-panel{padding:var(--sp5)}.cyd-h{font-size:27px}.cyd-review div{grid-template-columns:minmax(0,1fr);gap:2px}.cyd-day{min-height:42px;font-size:13px}.cyd-day i{display:none}}
+@media print{.cyd-noprint{display:none!important}.cyd-panel{border:0;box-shadow:none;padding:0}}
+</style>
+
+<div id="cyd-book">
+<div class="cyd-blocks"><i style="background:var(--violet-500)"></i><i style="background:var(--blue-500)"></i><i style="background:var(--verdant-500)"></i><i style="background:var(--gold-500)"></i></div>
+<header class="cyd-head"><div class="cyd-head-in">
+<div class="cyd-lock">{% endraw %}{%- if settings.logo != blank -%}<img class="wm" src="{{ settings.logo | image_url: width: 800 }}" alt="Choose Your Destiny">{%- else -%}<span class="wm" style="font-size:22px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff">{{ shop.name }}</span>{%- endif -%}{% raw %}</div>
+<div style="text-align:right"><div class="cyd-kicker">2027 Bookings</div></div>
+</div></header>
+
+<div class="cyd-wrap"><div class="cyd-panel">
+<div class="cyd-steps cyd-noprint" id="cyd-steps"></div>
+<div id="cyd-body"></div>
+</div></div>
+
+<div class="cyd-admin cyd-hide cyd-noprint" id="cyd-admin"><div class="cyd-admin-panel">
+<div class="cyd-admin-bar"><b>2027 Calendar</b><span id="cyd-count" style="font-size:12px;color:#bdbdbd"></span><span class="cyd-spacer"></span>
+<button class="cyd-btn sm" id="cyd-csv">Export CSV</button><button class="cyd-btn sm" id="cyd-db">Save Database File</button><button class="cyd-btn sm" id="cyd-import">Import JSON</button><button class="cyd-btn sm" id="cyd-avail">Availability</button><button class="cyd-btn sm" id="cyd-close">Close</button></div>
+<div id="cyd-settings" class="cyd-hide" style="padding:var(--sp5);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)">
+<p style="font-size:13px;color:var(--ink-500);margin-bottom:16px;max-width:62ch">Which hours you offer on each weekday, as comma-separated 24-hour times. Leave a day empty to close it. Each hour is sorted into a band automatically &mdash; <b style="color:var(--verdant-500)">regular 8am&ndash;3pm</b>, <b style="color:var(--gold-700)">limited 4pm&ndash;9pm</b>, <b style="color:var(--violet-500)">after hours 10pm&ndash;7am</b> &mdash; and the swatches under each day show which bands it covers. Saved on this device.</p>
+<div class="cyd-availgrid" id="cyd-availgrid"></div>
+<div style="margin-top:var(--sp5)"><label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px">Blocked dates (comma-separated, YYYY-MM-DD)</label><input id="s_blocked" type="text" placeholder="2027-01-01, 2027-07-04" style="width:100%;font-size:13px;padding:8px;border:2px solid var(--ink-900);border-radius:0;font-family:inherit"></div>
+<div style="margin-top:var(--sp5)"><label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px">Time zone label shown to clients</label><input id="s_tz" type="text" style="width:100%;font-size:13px;padding:8px;border:2px solid var(--ink-900);border-radius:0;font-family:inherit"></div>
+<div class="cyd-actions"><button class="cyd-btn" id="cyd-save-avail">Save availability</button><span id="cyd-saved" style="font-size:12px;color:var(--verdant-500);font-weight:700"></span></div>
+</div>
+<div id="cyd-records"></div>
+</div></div>
+
+<div class="cyd-foot cyd-noprint"><span id="cyd-footnote">All bookings are stored only on this device. Nothing is transmitted.</span><button id="cyd-advisor">Advisor access</button></div>
+<input type="file" id="cyd-file" accept=".json" style="display:none">
+</div>
+
+<script>
+(function(){
+var KEY='cyd_bookings_2027_v1',DKEY='cyd_booking_draft_v1',AKEY='cyd_availability_v1',PKEY='cyd_booking_prefill';
+
+/* ===== BUILD MODE =====================================================
+   'advisor' — your own device. Keeps the booking database, shows the
+               Advisor panel, marks taken slots, exports CSV / JSON / DB.
+   'public'  — the Shopify embed. No database and no Advisor panel, so a
+               visitor's browser never holds anyone else's bookings. Slots
+               are shown as requests and the booking is delivered to you.
+   bookings-2027-shopify.html is this file with MODE flipped to 'public'.
+   ===================================================================== */
+var MODE='public';
+var ADVISOR_EMAIL='contact@chooseyourdestiny.us';
+var SUBMIT_ENDPOINT='';
+var INTAKE_URL='/pages/client-intake';
+
+var YEAR=2027;
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var SERVICES=[
+  {name:'Spiritual Advice (divination, i.e. rune / tarot readings)',note:'Rune and tarot readings',durations:[30,60,90]},
+  {name:'Sleep Subliminals (custom 8 hr video program)',note:'Consultation to scope your custom program',durations:[30,60]},
+  {name:'Energy or wellness coaching (ongoing, specific or deep work)',note:'Deep or ongoing work',durations:[60,90,120]},
+  {name:'Hack The Matrix (class teaching how to use -The Metaphysical Dayplanner- along with the Grabovoi numerology codes and the visual concentration exercises one must execute from their souls seat by way one the so-called Imagination)',note:'Learn the Dayplanner, the Grabovoi codes and the concentration exercises',durations:[30,60,90,120]}
+];
+/* Rates. Standard is $100/hr. Every length is currently marked down to $1/min.
+   promoEnds: set the last day of the price cut as 'YYYY-MM-DD' to show a deadline,
+   or leave it '' to show the cut with no end date. */
+var RATES={30:{now:30,was:50},60:{now:60,was:100},90:{now:90,was:150},120:{now:120,was:200}};
+var promoEnds='2027-01-01';
+function money(n){return '$'+n}
+function promoLine(){
+  if(!promoEnds)return 'Reduced rates, limited time.';
+  var d=new Date(promoEnds+'T12:00:00');
+  return 'Reduced rates through '+MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear()+'.';
+}
+/* Three time bands. A slot's band is derived from its hour, so the advisor only
+   ever edits hours in Availability — the tiers follow automatically.
+     regular : 08:00–15:59  standard rate
+     limited : 16:00–21:59  availability and fees may vary
+     after   : 22:00–07:59  availability and fees may vary
+   'after' wraps midnight, so it is the fallback rather than a range test. */
+var TIERS=[
+  {key:'regular',label:'Regular hours',window:'8am \u2013 3pm',note:'Standard availability and rates.',color:'var(--verdant-500)',test:function(hr){return hr>=8&&hr<16}},
+  {key:'limited',label:'Limited hours',window:'4pm \u2013 9pm',note:'Availability and fees may vary.',color:'var(--gold-700)',test:function(hr){return hr>=16&&hr<22}},
+  {key:'after',label:'After hours',window:'10pm \u2013 7am',note:'Availability and fees may vary.',color:'var(--violet-500)',test:function(){return true},
+   /* this band wraps midnight, so 22:00 must sort before 00:00 */
+   order:function(hr){return (hr+2)%24}}
+];
+function tierFor(t){var hr=+String(t).split(':')[0];for(var i=0;i<TIERS.length;i++)if(TIERS[i].test(hr))return TIERS[i];return TIERS[2]}
+/* sort a band's hours by its own start, not lexically */
+function sortInTier(list,tier){return list.slice().sort(function(a,c){
+  var ha=+String(a).split(':')[0],hc=+String(c).split(':')[0];
+  var oa=tier.order?tier.order(ha):ha,oc=tier.order?tier.order(hc):hc;
+  return oa-oc||String(a).localeCompare(String(c));
+})}
+function tierByKey(k){for(var i=0;i<TIERS.length;i++)if(TIERS[i].key===k)return TIERS[i];return null}
+var DEFAULT_AVAIL={
+  0:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  1:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  2:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  3:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  4:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  5:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  6:['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00']
+};
+
+var avail={days:JSON.parse(JSON.stringify(DEFAULT_AVAIL)),blocked:[],tz:'Eastern Time (ET)'};
+var step=0,b={},month=0;
+var $=function(s,r){return (r||document).querySelector(s)};
+var body=$('#cyd-body'),stepsEl=$('#cyd-steps');
+var STEPS=['Session','Date','Time','Your details'];
+
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
+function save(r){try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){alert('Could not save to this device: '+e.message)}}
+function loadAvail(){try{var v=JSON.parse(localStorage.getItem(AKEY));if(v&&v.days)avail=v}catch(e){}}
+function saveDraft(){try{localStorage.setItem(DKEY,JSON.stringify({step:step,b:b,month:month}))}catch(e){}}
+function loadDraft(){try{var v=JSON.parse(localStorage.getItem(DKEY));if(v&&v.b){b=v.b;step=v.step||0;month=v.month||0}}catch(e){}}
+function dl(name,text,type){var bl=new Blob([text],{type:type||'application/json'}),u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000)}
+function slug(s){return String(s||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'client'}
+function pad(n){return String(n).padStart(2,'0')}
+function iso(y,m,day){return y+'-'+pad(m+1)+'-'+pad(day)}
+function pretty(dstr){var p=dstr.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);return DOW[dt.getDay()]+', '+MONTHS[dt.getMonth()]+' '+(+p[2])+', '+p[0]}
+function pretty12(t){var p=t.split(':'),h=+p[0],ap=h>=12?'pm':'am',h12=h%12===0?12:h%12;return h12+(p[1]==='00'?'':':'+p[1])+' '+ap}
+function endTime(t,mins){var p=t.split(':'),tot=(+p[0])*60+(+p[1])+mins;return pad(Math.floor(tot/60)%24)+':'+pad(tot%60)}
+function takenKeys(){var o={};if(MODE==='advisor')load().forEach(function(r){if(r.status!=='cancelled')o[r.date+' '+r.time]=1});return o}
+
+/* ---- render ---- */
+function renderSteps(){stepsEl.innerHTML=STEPS.map(function(s,i){return '<div class="'+(i===step?'on':(i<step?'done':''))+'">'+(i+1)+'. '+s+'</div>'}).join('')}
+
+function render(){
+  renderSteps();
+  if(step===0){
+    var svc=SERVICES.map(function(s,i){return '<button type="button" class="cyd-pick'+(b.service===s.name?' sel':'')+'" data-svc="'+i+'"><b>'+esc(s.name)+'</b><span>'+esc(s.note)+'</span></button>'}).join('');
+    var cur=SERVICES.filter(function(s){return s.name===b.service})[0];
+    var dur=cur?'<div class="cyd-f full" data-f="duration" style="margin-top:32px"><label>How long <span class="req">*</span><div class="hint">Sessions often run over. That extra time is donated, not billed. '+esc(promoLine())+'</div></label><div class="cyd-slots" style="margin-top:0">'+cur.durations.map(function(m){var r=RATES[m];return '<button type="button" class="cyd-slot cyd-rate'+(b.duration===m?' sel':'')+'" data-dur="'+m+'"><b>'+m+' min</b><span>'+money(r.now)+'</span><small>regularly '+money(r.was)+'</small></button>'}).join('')+'</div></div>':'';
+    body.innerHTML='<h2 class="cyd-h">Let\u2019s find your time in 2027.</h2><p class="cyd-sub">Choose what you would like to book. Every session runs on '+esc(avail.tz)+'.</p>'+
+      '<div class="cyd-f full" data-f="service"><div class="cyd-picks">'+svc+'</div></div>'+dur+
+      '<div class="cyd-actions"><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  }
+{% endraw %}

@@ -1,0 +1,615 @@
+{%- comment -%}
+  Choose Your Destiny — Client intake + consultation agreement
+  Paste this whole file into a Shopify page via a Custom Liquid section,
+  or save it as a snippet and render it with {% render 'cyd-intake' %}.
+
+  Everything is scoped to #cyd-intake — no unscoped rules, so your theme is untouched.
+  No external fonts, scripts, or stylesheets.
+
+  Before going live, edit the CONFIG block near the top of the <script>:
+    ADVISOR_EMAIL   — already set to contact@chooseyourdestiny.us
+    SUBMIT_ENDPOINT — leave '' for the email fallback, or set a URL that accepts a JSON POST
+    INTAKE_URL / BOOKING_URL — where the companion page lives. This file expects
+                              it at /pages/2027-bookings; change it if your Shopify
+                              page handle differs.
+{%- endcomment -%}
+
+{% raw %}
+<style>
+/* All styles scoped to #cyd-intake so this can be injected into a Shopify theme without collisions. Token values mirror the CYD design system; inlined so the form works with no network. */
+#cyd-intake{--ink-900:#0a0a0a;--ink-700:#1c1c1c;--ink-500:#3a3a3a;--paper-000:#fff;--paper-050:#faf9f7;--paper-100:#efeee9;--gold-300:#ffe774;--gold-500:#f0c93e;--gold-700:#c9a11f;--indigo-300:#5a4de0;--indigo-500:#2c1fa8;--indigo-700:#170f5c;--blue-500:#2f6fd1;--violet-500:#5c3a8f;--verdant-500:#5fa858;--magenta-500:#d94fb8;--font-serif:'Cormorant Garamond',Georgia,serif;--font-sans:'Assistant',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sp3:12px;--sp4:16px;--sp5:24px;--sp6:32px;--sp7:48px;--bw:2px;--shadow-lift:4px 4px 0 var(--ink-900);box-sizing:border-box;font-family:var(--font-sans);color:var(--ink-900);background:var(--paper-000);-webkit-font-smoothing:antialiased;line-height:1.5}
+#cyd-intake *,#cyd-intake *::before,#cyd-intake *::after{box-sizing:border-box}
+#cyd-intake h1,#cyd-intake h2,#cyd-intake h3,#cyd-intake h4,#cyd-intake p,#cyd-intake ol,#cyd-intake ul,#cyd-intake li{margin:0;padding:0}
+#cyd-intake a{color:var(--indigo-500);text-decoration:underline}
+#cyd-intake a:hover{color:var(--indigo-700)}
+#cyd-intake button{font-family:inherit}
+.cyd-blocks{display:flex;height:10px}
+.cyd-blocks>i{flex:1}
+.cyd-head{background:var(--ink-900);color:var(--paper-000);padding:var(--sp5) var(--sp5) var(--sp4)}
+.cyd-head-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp5);flex-wrap:wrap}
+.cyd-lock{display:flex;align-items:center;gap:14px;min-width:0;flex-wrap:wrap}
+.cyd-lock img{height:64px;width:auto;flex:none}
+.cyd-lock .wm{width:240px;height:auto;max-width:100%}
+.cyd-kicker{font-family:'Lora',Georgia,serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-500);font-weight:800}
+.cyd-wrap{max-width:1200px;margin:0 auto;padding:var(--sp6) var(--sp5) var(--sp7)}
+.cyd-panel{background:var(--paper-000);border:var(--bw) solid var(--ink-900);box-shadow:var(--shadow-lift);padding:var(--sp6)}
+.cyd-steps{display:flex;gap:2px;margin-bottom:var(--sp6);flex-wrap:wrap}
+.cyd-steps>div{flex:1 1 90px;min-width:0;padding:10px 12px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--paper-100);color:var(--ink-500);border-bottom:4px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cyd-steps>div.on{background:var(--ink-900);color:var(--paper-000)}
+.cyd-steps>div.done{background:var(--paper-050);color:var(--ink-900)}
+.cyd-steps>div:nth-child(1){border-bottom-color:var(--violet-500)}
+.cyd-steps>div:nth-child(2){border-bottom-color:var(--blue-500)}
+.cyd-steps>div:nth-child(3){border-bottom-color:var(--verdant-500)}
+.cyd-steps>div:nth-child(4){border-bottom-color:var(--gold-500)}
+.cyd-steps>div:nth-child(5){border-bottom-color:var(--magenta-500)}
+.cyd-h{font-family:var(--font-serif);font-size:34px;line-height:1.1;font-weight:600;margin-bottom:8px}
+.cyd-sub{color:var(--ink-500);font-size:15px;max-width:60ch;text-wrap:pretty}
+.cyd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp4);margin-top:var(--sp6)}
+.cyd-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cyd-f.full{grid-column:1/-1}
+.cyd-f>label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.cyd-f .hint{font-size:12px;color:var(--ink-500);font-weight:400;letter-spacing:0;text-transform:none}
+.cyd-f input[type=text],.cyd-f input[type=email],.cyd-f input[type=tel],.cyd-f input[type=date],.cyd-f input[type=time],.cyd-f select,.cyd-f textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:11px 12px;border:var(--bw) solid var(--ink-900);border-radius:0;background:var(--paper-000);color:var(--ink-900)}
+.cyd-f textarea{min-height:96px;resize:vertical;line-height:1.5}
+.cyd-f input:focus,.cyd-f select:focus,.cyd-f textarea:focus{outline:3px solid var(--indigo-300);outline-offset:1px}
+.cyd-f .err{font-size:12px;color:#b3123c;font-weight:600}
+.cyd-f.bad input,.cyd-f.bad select,.cyd-f.bad textarea{border-color:#b3123c}
+.req{color:var(--magenta-500)}
+.cyd-picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cyd-pick{display:flex;align-items:flex-start;gap:10px;border:var(--bw) solid var(--ink-900);padding:12px;cursor:pointer;background:var(--paper-000);transition:background 120ms cubic-bezier(.2,.8,.2,1)}
+.cyd-pick:hover{background:var(--paper-050)}
+.cyd-pick input{margin:2px 0 0;flex:none;width:18px;height:18px;accent-color:var(--indigo-500)}
+.cyd-pick span{font-size:14px;font-weight:600;line-height:1.35}
+.cyd-pick.sel{background:var(--gold-300)}
+.cyd-note{border-left:6px solid var(--blue-500);background:var(--paper-050);padding:var(--sp4);font-size:13px;color:var(--ink-700);margin-top:var(--sp5)}
+.cyd-actions{display:flex;gap:var(--sp3);margin-top:var(--sp6);flex-wrap:wrap;align-items:center}
+.cyd-btn{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 26px;border:var(--bw) solid var(--ink-900);border-radius:0;cursor:pointer;background:var(--gold-500);color:var(--ink-900);box-shadow:var(--shadow-lift);transition:transform 120ms cubic-bezier(.2,.8,.2,1),box-shadow 120ms cubic-bezier(.2,.8,.2,1),background 120ms}
+.cyd-btn:hover{background:var(--gold-300)}
+.cyd-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink-900)}
+.cyd-btn.dark{background:var(--ink-900);color:var(--paper-000)}
+.cyd-btn.dark:hover{background:var(--indigo-700)}
+.cyd-btn.ghost{background:transparent;box-shadow:none}
+.cyd-btn.ghost:hover{background:var(--paper-100)}
+.cyd-btn.sm{padding:9px 16px;font-size:12px;box-shadow:2px 2px 0 var(--ink-900)}
+.cyd-btn:disabled{opacity:.4;cursor:not-allowed}
+.cyd-spacer{flex:1}
+.cyd-legal{border:var(--bw) solid var(--ink-900);background:var(--paper-050);padding:var(--sp5);max-height:420px;overflow-y:auto;margin-top:var(--sp5)}
+.cyd-legal h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:var(--sp5) 0 6px;padding-top:var(--sp4);border-top:1px solid var(--paper-100)}
+.cyd-legal h3:first-child{margin-top:0;padding-top:0;border-top:0}
+.cyd-legal p{font-size:13.5px;line-height:1.65;color:var(--ink-700);margin-bottom:8px;text-wrap:pretty}
+.cyd-legal .fill{background:var(--gold-300);padding:1px 5px;font-weight:600;color:var(--ink-900)}
+.cyd-acks{display:flex;flex-direction:column;gap:10px;margin-top:var(--sp5)}
+.cyd-readbar{height:6px;background:var(--paper-100);margin-top:var(--sp3);border:1px solid var(--ink-900)}
+.cyd-readfill{height:100%;width:0;background:var(--verdant-500);transition:width 120ms linear}
+.cyd-ack{display:flex;align-items:flex-start;gap:12px;border:var(--bw) solid var(--ink-900);padding:13px;font-size:13.5px;line-height:1.45;cursor:pointer;background:var(--paper-000)}
+.cyd-ack:hover{background:var(--paper-050)}
+.cyd-ack input{margin:1px 0 0;flex:none;width:18px;height:18px;accent-color:var(--indigo-500)}
+.cyd-ack.sel{background:var(--paper-050);border-color:var(--verdant-500);box-shadow:inset 4px 0 0 var(--verdant-500)}
+.cyd-ack.opt{border-style:dashed}
+.cyd-sigwrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp5);margin-top:var(--sp6)}
+.cyd-canvas{border:var(--bw) solid var(--ink-900);background:var(--paper-000);width:100%;height:170px;touch-action:none;cursor:crosshair;display:block}
+.cyd-typed{font-family:var(--font-serif);font-size:26px!important;font-style:italic}
+.cyd-review{margin-top:var(--sp5);border:var(--bw) solid var(--ink-900)}
+.cyd-review div{display:grid;grid-template-columns:200px 1fr;gap:var(--sp4);padding:10px var(--sp4);font-size:13.5px;border-bottom:1px solid var(--paper-100)}
+.cyd-review div:last-child{border-bottom:0}
+.cyd-review dt,.cyd-review b{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);align-self:center}
+.cyd-review span{word-break:break-word;white-space:pre-wrap}
+.cyd-done{text-align:center;padding:var(--sp6) 0}
+.cyd-done .mark{font-family:var(--font-serif);font-size:56px;line-height:1;color:var(--verdant-500);margin-bottom:var(--sp4)}
+.cyd-admin{max-width:1200px;margin:0 auto var(--sp7);padding:0 var(--sp5)}
+.cyd-admin-panel{border:var(--bw) solid var(--ink-900);background:var(--paper-000);box-shadow:var(--shadow-lift)}
+.cyd-admin-bar{background:var(--ink-900);color:var(--paper-000);padding:var(--sp4);display:flex;gap:var(--sp3);align-items:center;flex-wrap:wrap}
+.cyd-admin-bar b{font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.cyd-admin-bar .cyd-btn{box-shadow:none;border-color:var(--paper-000);color:var(--paper-000);background:transparent}
+.cyd-admin-bar .cyd-btn:hover{background:var(--indigo-700)}
+.cyd-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cyd-tbl th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:10px var(--sp4);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)}
+.cyd-tbl td{padding:10px var(--sp4);border-bottom:1px solid var(--paper-100);vertical-align:top}
+.cyd-tbl tr:hover td{background:var(--paper-050)}
+.cyd-empty{padding:var(--sp6);text-align:center;color:var(--ink-500);font-size:14px}
+.cyd-foot{max-width:1200px;margin:0 auto;padding:0 var(--sp5) var(--sp6);font-size:12px;color:var(--ink-500);display:flex;gap:var(--sp4);justify-content:space-between;flex-wrap:wrap}
+.cyd-foot button{background:none;border:0;color:var(--ink-500);font-size:12px;cursor:pointer;text-decoration:underline;padding:0}
+.cyd-foot button:hover{color:var(--ink-900)}
+.cyd-hide{display:none!important}
+#tw{position:fixed;right:16px;bottom:16px;width:240px;max-height:calc(100vh - 32px);overflow-y:auto;background:#fff;border:2px solid #0a0a0a;box-shadow:4px 4px 0 #0a0a0a;font:400 12px/1.4 'Inter',-apple-system,sans-serif;color:#0a0a0a;z-index:99999;display:none}
+#tw.on{display:block}
+#tw .hd{display:flex;align-items:center;justify-content:space-between;background:#0a0a0a;color:#fff;padding:9px 12px;font-weight:700;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+#tw .hd button{background:none;border:0;color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0 2px}
+#tw .bd{padding:12px}
+#tw .sec{font-weight:700;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#3a3a3a;margin:14px 0 8px;padding-top:10px;border-top:1px solid #efeee9}
+#tw .sec:first-child{margin-top:0;padding-top:0;border-top:0}
+#tw .row{margin-bottom:11px}
+#tw .sw{display:flex;gap:6px}
+#tw .sw button{width:30px;height:30px;border:2px solid #0a0a0a;cursor:pointer;padding:0;border-radius:0}
+#tw .sw button.sel{outline:2px solid #2c1fa8;outline-offset:2px}
+#tw .tg{display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:11px;cursor:pointer}
+#tw .tg input{width:16px;height:16px;accent-color:#2c1fa8;margin:0}
+@media(max-width:700px){.cyd-grid,.cyd-picks,.cyd-sigwrap{grid-template-columns:minmax(0,1fr)}.cyd-panel{padding:var(--sp5)}.cyd-h{font-size:27px}.cyd-review div{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media print{.cyd-noprint{display:none!important}.cyd-panel{border:0;box-shadow:none;padding:0}.cyd-legal{max-height:none;overflow:visible;border:0;background:#fff;padding:0}.cyd-legal p{font-size:11pt}.cyd-review{break-inside:avoid}}
+</style>
+
+<div id="cyd-intake">
+<div class="cyd-blocks"><i style="background:var(--violet-500)"></i><i style="background:var(--blue-500)"></i><i style="background:var(--verdant-500)"></i><i style="background:var(--gold-500)"></i></div>
+<header class="cyd-head"><div class="cyd-head-in">
+<div class="cyd-lock">{% endraw %}{%- if settings.logo != blank -%}<img class="wm" src="{{ settings.logo | image_url: width: 800 }}" alt="Choose Your Destiny">{%- else -%}<span class="wm" style="font-size:22px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff">{{ shop.name }}</span>{%- endif -%}{% raw %}</div>
+<div style="text-align:right"><div class="cyd-kicker">New Client Intake</div><div style="font-size:13px;color:#bdbdbd;margin-top:3px"></div></div>
+</div></header>
+
+<div class="cyd-wrap"><div class="cyd-panel">
+<div class="cyd-steps cyd-noprint" id="cyd-steps"></div>
+<div id="cyd-body"></div>
+</div></div>
+
+<div class="cyd-admin cyd-hide cyd-noprint" id="cyd-admin"><div class="cyd-admin-panel">
+<div class="cyd-admin-bar"><b>Client Records</b><span id="cyd-count" style="font-size:12px;color:#bdbdbd"></span><span class="cyd-spacer"></span>
+<button class="cyd-btn sm" id="cyd-csv">Export CSV</button><button class="cyd-btn sm" id="cyd-db">Save Database File</button><button class="cyd-btn sm" id="cyd-json">Export All JSON</button><button class="cyd-btn sm" id="cyd-import">Import JSON</button><button class="cyd-btn sm" id="cyd-terms">My Terms</button><button class="cyd-btn sm" id="cyd-close">Close</button></div>
+<div id="cyd-settings" class="cyd-hide" style="padding:var(--sp5);border-bottom:var(--bw) solid var(--ink-900);background:var(--paper-050)">
+<p style="font-size:13px;color:var(--ink-500);margin-bottom:16px;max-width:60ch">Fill these in once. They are saved on this device and inserted into sections 7, 12, 13, and 14 of every agreement a client signs. Until you fill them in, those sections show a highlighted placeholder.</p>
+<div class="cyd-grid" style="margin-top:0">
+<div class="cyd-f full"><label for="s_payTerms">§12 Payment, deposits, and refunds</label><textarea id="s_payTerms" placeholder="e.g. A 50% non-refundable deposit is due at booking to reserve the session. The remaining balance is due at or before the start of the session. All sales of digital audio and downloadable materials are final and non-refundable once delivered."></textarea></div>
+<div class="cyd-f full"><label for="s_cancelTerms">§13 Cancellation and no-shows</label><textarea id="s_cancelTerms" placeholder="e.g. Cancellations made more than 24 hours before the session forfeit the deposit but incur no further charge. Cancellations inside 24 hours, or failure to appear within 15 minutes of the start time, are treated as a completed session and the full fee is owed."></textarea></div>
+<div class="cyd-f full"><label for="s_rescheduleTerms">§14 Rescheduling</label><textarea id="s_rescheduleTerms" placeholder="e.g. A session may be rescheduled once at no charge with at least 48 hours written notice. Later or repeat reschedules are at the Advisor's discretion and may require a new deposit."></textarea></div>
+<div class="cyd-f full"><label for="s_liabilityCap">§7 Liability cap wording</label><input id="s_liabilityCap" type="text" placeholder="the total amount the Client actually paid for the service giving rise to the claim"></div>
+<div class="cyd-f full"><label for="s_jurisdiction">§18 Governing law</label><input id="s_jurisdiction" type="text"></div>
+</div>
+<div class="cyd-actions"><button class="cyd-btn" id="cyd-save-terms">Save my terms</button><span id="cyd-saved" style="font-size:12px;color:var(--verdant-500);font-weight:700"></span></div>
+</div>
+<div id="cyd-records"></div>
+</div></div>
+
+<div class="cyd-foot cyd-noprint"><span>All information is stored only on this device. Nothing is transmitted.</span><button id="cyd-advisor">Advisor access</button></div>
+<input type="file" id="cyd-file" accept=".json" style="display:none">
+</div>
+<div id="tw" class="cyd-noprint"><div class="hd"><span>Tweaks</span><button id="tw-x" title="Close">&times;</button></div><div class="bd" id="tw-bd"></div></div>
+
+<script>
+(function(){
+var KEY='cyd_intake_records_v1',DKEY='cyd_intake_draft_v1',SKEY='cyd_intake_terms_v1';
+
+/* ===== BUILD MODE =====================================================
+   'advisor' — your own tablet or laptop. Keeps a local records database,
+               exposes the Advisor panel, exports CSV / JSON / database file.
+   'public'  — the Shopify embed. No records database and no Advisor panel,
+               because a client's browser must never hold other clients'
+               data. On submit the client gets their own copy and the intake
+               is delivered to you (POST if SUBMIT_ENDPOINT is set, otherwise
+               a prefilled email).
+   shopify.html is this same file with MODE flipped to 'public'.
+   ===================================================================== */
+var MODE='public';
+var ADVISOR_EMAIL='contact@chooseyourdestiny.us';
+var SUBMIT_ENDPOINT='';
+var BOOKING_URL='/pages/2027-bookings';
+var TERMFIELDS=['payTerms','cancelTerms','rescheduleTerms','liabilityCap','jurisdiction'];
+var terms={
+  jurisdiction:'the State of North Carolina',
+  payTerms:'All sales are final. Payment reserves a specific window of the Advisor\u2019s time and attention, and that time is held for the Client alone, so fees are non-refundable once a session is booked. Where a session is not attended, any payment already made is received and retained as a donation toward the Advisor\u2019s continued practice rather than as a fee for services rendered. This exchange runs in both directions: if a Client books a thirty minute session and the work calls for two hours, the additional time is donated by the Advisor at no further charge. This practice is holistic and community oriented, and both parties agree to meet each other in that spirit of mutual generosity rather than strict accounting.',
+  cancelTerms:'The Client is asked to give as much notice as possible when they cannot attend. In the case of a no call, no show \u2014 where the Client neither appears nor makes contact \u2014 the reserved time cannot be offered to anyone else, and any payment made is retained as a donation as described in Section 12. No refund is owed. The Advisor will still make a good faith effort to find the Client another window, as set out in Section 14.',
+  rescheduleTerms:'Life happens, and a missed appointment is not the end of the working relationship. Where a session is missed for any reason, the Advisor will do their best to work with the Client to reschedule within thirty days or less, subject to availability. The Client is encouraged to reach out as soon as they are able so a new window can be held for them.'
+};
+function loadTerms(){try{var v=JSON.parse(localStorage.getItem(SKEY));if(v)for(var k in v)if(v[k])terms[k]=v[k]}catch(e){}}
+var SERVICES=['Spiritual Advice (divination, i.e. rune / tarot readings)','Sleep Subliminals (custom 8 hr video program)','Energy or wellness coaching (ongoing, specific or deep work)','Hack The Matrix Class (I will teach you how to effectively use -The Metaphysical Dayplanner-)'];
+var FOUND=['Instagram','TikTok','YouTube','Referral from a friend','Event or pop-up','Shopify store','Other'];
+var BUDGET=['Under $100','$100 – $250','$250 – $500','$500 – $1,000','$1,000+','Not sure yet'];
+var EXP=['This is my first time','I have had a few sessions','I work with this regularly','I practice myself'];
+var ACK_COVERS=['a_adult','a_ent','a_nonpro','a_noguar','a_risk','a_rec','a_terms','a_esign'];
+var step=0,d={},sigDirty=false;
+var TW = /*EDITMODE-BEGIN*/{
+  "accent": "#f0c93e",
+  "showBlocks": true,
+  "showBudget": true,
+  "requireHealth": false
+}/*EDITMODE-END*/;
+var $=function(s,r){return (r||document).querySelector(s)};
+var body=$('#cyd-body'),stepsEl=$('#cyd-steps');
+var STEPS=['Contact','Session','Wellbeing','Agreement','Sign'];
+
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
+function save(r){try{localStorage.setItem(KEY,JSON.stringify(r))}catch(e){alert('Could not save to this device: '+e.message)}}
+function saveDraft(){try{localStorage.setItem(DKEY,JSON.stringify({step:step,d:d}))}catch(e){}}
+function loadDraft(){try{var v=JSON.parse(localStorage.getItem(DKEY));if(v&&v.d){d=v.d;step=v.step||0}}catch(e){}}
+function dl(name,text,type){var b=new Blob([text],{type:type||'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000)}
+function slug(s){return String(s||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'client'}
+
+function opts(list,val){return list.map(function(o){return '<option value="'+esc(o)+'"'+(val===o?' selected':'')+'>'+esc(o)+'</option>'}).join('')}
+function field(id,label,html,hint,req){return '<div class="cyd-f" data-f="'+id+'"><label for="f_'+id+'">'+esc(label)+(req?' <span class="req">*</span>':'')+(hint?'<div class="hint">'+hint+'</div>':'')+'</label>'+html+'</div>'}
+function txt(id,type,ph){return '<input id="f_'+id+'" type="'+(type||'text')+'" value="'+esc(d[id])+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
+function area(id,ph){return '<textarea id="f_'+id+'" placeholder="'+esc(ph||'')+'">'+esc(d[id])+'</textarea>'}
+function sel(id,list,ph){return '<select id="f_'+id+'"><option value="">'+esc(ph||'Select…')+'</option>'+opts(list,d[id])+'</select>'}
+
+function renderSteps(){stepsEl.innerHTML=STEPS.map(function(s,i){return '<div class="'+(i===step?'on':(i<step?'done':''))+'">'+(i+1)+'. '+s+'</div>'}).join('')}
+
+function render(){
+  renderSteps();
+  if(step===0)body.innerHTML=
+    '<h2 class="cyd-h">Let’s begin with you.</h2><p class="cyd-sub">This intake tells me who I am working with and how to reach you. Fields marked with an asterisk are required.</p>'+
+    '<div class="cyd-grid">'+
+    field('name','Full legal name',txt('name','text','Your Name Here'),'As it should appear on the agreement.',1)+
+    field('preferred','Name you go by',txt('preferred'),'',0)+
+    field('email','Email',txt('email','email','you@example.com'),'',1)+
+    field('phone','Phone',txt('phone','tel','(555) 555-5555'),'',1)+
+    field('social','Instagram / TikTok handle',txt('social','text','@handle'),'',0)+
+    field('found','How did you find me?',sel('found',FOUND),'',1)+
+    field('addr1','Mailing address',txt('addr1','text','Street address'),'Used only for shipped items and records.',0)+
+    field('addr2','Apt / unit',txt('addr2'),'',0)+
+    field('city','City',txt('city'),'',0)+
+    field('state','State / region',txt('state'),'',0)+
+    field('zip','Postal code',txt('zip'),'',0)+
+    field('country','Country',txt('country'),'',0)+
+    '</div>'+
+    '<div class="cyd-acks">'+
+    ack('a_news','<b>Optional.</b> Yes, email me occasional updates, new drops, and subliminal releases from Choose Your Destiny. I can unsubscribe at any time, and my address will not be sold or shared.',1)+
+    '</div>'+
+    '<div class="cyd-actions"><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===1)body.innerHTML=
+    '<h2 class="cyd-h">Your session.</h2><p class="cyd-sub">Birth data is used for chart and records work. If you do not know your exact birth time, leave it blank and note what you do know.</p>'+
+    '<p class="cyd-sub" style="margin-top:10px"><b>Sessions are $1 a minute right now.</b> 30 minutes $30, 60 minutes $60, 90 minutes $90, 120 minutes $120 \u2014 regularly $50, $100, $150 and $200. Reduced rates through January 1, 2027.</p>'+
+    field('services','What are you booking?','<div class="cyd-picks" id="svc">'+SERVICES.map(function(s){var on=(d.services||[]).indexOf(s)>-1;return '<label class="cyd-pick'+(on?' sel':'')+'"><input type="checkbox" value="'+esc(s)+'"'+(on?' checked':'')+'><span>'+esc(s)+'</span></label>'}).join('')+'</div>','',1).replace('<label for="f_services">','<label>')+
+    '<div class="cyd-grid">'+
+    field('bdate','Birth date',txt('bdate','date'),'',1)+
+    field('btime','Birth time',txt('btime','time'),'Leave blank if unknown.',0)+
+    field('bplace','Birth city and country',txt('bplace','text','Charlotte, USA'),'',0)+
+    field('exp','Experience with this work',sel('exp',EXP),'',0)+
+    field('intent','What is your intention or question for this session?',area('intent','In your own words, what would you like to focus on.'),'',1)+
+    field('dates','Preferred dates or times',area('dates','e.g. 30 mins on weekday evenings after 6pm ET, or the week of the 14th'),'',0)+
+    (TW.showBudget?field('budget','Budget range',sel('budget',BUDGET),'',0):'')+
+    '</div><div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===2)body.innerHTML=
+    '<h2 class="cyd-h">Wellbeing check.</h2><p class="cyd-sub">This work is not a substitute for medical or mental health care. Sharing this helps me hold the session responsibly and adjust anything that would not serve you.</p>'+
+    '<div class="cyd-grid">'+
+    field('health','Health, medication, or safety notes',area('health','Conditions, medications, pregnancy, seizure or photosensitivity history, recent surgery, anything affecting sleep if you are ordering subliminal audio, or anything else I should know. Write “none” if none apply.'),TW.requireHealth?'Required. Stored on my device only and never shared.':'Optional but strongly encouraged. Stored on my device only and never shared.',TW.requireHealth?1:0)+
+    field('support','Are you currently under the care of a doctor or therapist?','<div class="cyd-picks">'+['Yes','No','Prefer not to say'].map(function(o){return '<label class="cyd-pick'+(d.support===o?' sel':'')+'"><input type="radio" name="support" value="'+esc(o)+'"'+(d.support===o?' checked':'')+'><span>'+esc(o)+'</span></label>'}).join('')+'</div>','',0).replace('<label for="f_support">','<label>')+
+    '</div>'+
+    '<div class="cyd-note"><b>If you are in crisis, please stop here.</b> This service cannot help in an emergency. In the United States call or text 988 for the Suicide &amp; Crisis Lifeline, or call 911.</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+
+  if(step===3)body.innerHTML=
+    '<h2 class="cyd-h">Consultation agreement.</h2><p class="cyd-sub">Please read this in full. It explains what this service is, what it is not, and the terms we are both agreeing to. Scrolling to the end unlocks the signing step.</p>'+
+    legalHTML()+
+    '<div class="cyd-readbar"><div class="cyd-readfill" id="readfill"></div></div>'+
+    '<div class="cyd-acks">'+
+    ack('a_all','I have read the agreement in full. I am 18 or older and signing voluntarily. I understand these services are for spiritual, personal insight, and entertainment purposes only and are not medical, psychological, legal, or financial advice, that no outcome is guaranteed, and that no practitioner-patient or attorney-client relationship is created. I accept responsibility for my own decisions, release Choose Your Destiny and Patrick Jones from liability as described above, agree not to record without written consent, accept the payment and cancellation terms, and consent to signing electronically.')+
+    ack('a_media','<b>Optional.</b> I grant permission to use anonymized excerpts of my testimonial or session content in marketing. This is not required to book.',1)+
+    '</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><span id="readhint" style="font-size:12px;color:var(--ink-500)"></span><button class="cyd-btn" id="tosign" data-go="1">Continue to sign</button></div>';
+
+  if(step===4)body.innerHTML=
+    '<h2 class="cyd-h">Sign and submit.</h2><p class="cyd-sub">Type your full legal name, draw your signature, and confirm the date.</p>'+
+    '<div class="cyd-sigwrap">'+
+    field('signName','Typed full legal name','<input id="f_signName" type="text" class="cyd-typed" value="'+esc(d.signName)+'" placeholder="Your name">','This typed name is your electronic signature.',1)+
+    field('signDate','Date',txt('signDate','date'),'',1)+
+    '</div>'+
+    '<div class="cyd-f full" data-f="sig" style="margin-top:24px"><label>Drawn signature <span class="req">*</span><div class="hint">Use a mouse, trackpad, or finger.</div></label><canvas class="cyd-canvas" id="sigpad"></canvas><div class="cyd-actions" style="margin-top:10px"><button class="cyd-btn ghost sm" id="sigclear">Clear signature</button></div></div>'+
+    reviewHTML()+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn dark" id="submit">Submit &amp; save record</button></div>';
+
+  if(step===5){
+    var msg = MODE==='advisor'
+      ? 'Your intake and signed agreement are saved on this device. I will reach out at <b>'+esc(d.email)+'</b> to confirm your session.'
+      : (SUBMIT_ENDPOINT
+          ? (d.deliveryFailed
+              ? 'Your copy has downloaded, but the intake could not be sent — you may be offline. Please use the button below to email it instead.'
+              : 'Your intake and signed agreement have been sent. A copy has downloaded to your device. I will reach out at <b>'+esc(d.email)+'</b> to confirm your session.')
+          : 'A copy of your intake has downloaded to your device. <b>Please send it to me using the button below</b> — attach the downloaded file to the email. I will reply at <b>'+esc(d.email)+'</b> to confirm your session.');
+    body.innerHTML='<div class="cyd-done"><div class="mark">&#10003;</div><h2 class="cyd-h">Thank you, '+esc(d.preferred||(d.name||'').split(' ')[0]||'friend')+'.</h2>'+
+    '<p class="cyd-sub" style="margin:0 auto">'+msg+'</p>'+
+    '<div class="cyd-actions" style="justify-content:center">'+
+    (MODE==='public'&&(!SUBMIT_ENDPOINT||d.deliveryFailed)?'<a class="cyd-btn" style="text-decoration:none" href="'+mailtoLink(d)+'">Email my intake</a>':'')+
+    '<button class="cyd-btn'+(MODE==='public'&&(!SUBMIT_ENDPOINT||d.deliveryFailed)?' ghost':'')+'" id="dlrec">Download my copy (JSON)</button><button class="cyd-btn ghost" id="print">Print / save agreement</button>'+
+    (MODE==='advisor'?'<button class="cyd-btn ghost" id="again">Start a new intake</button>':'')+
+    '</div></div>'+
+'<div class="cyd-actions cyd-noprint" style="justify-content:center;margin-top:8px"><a class="cyd-btn dark" style="text-decoration:none" href="'+bookingLink()+'">Book your first 2027 session</a></div>'+
+    '<p class="cyd-sub cyd-noprint" style="margin:12px auto 0;text-align:center;font-size:13px">My 2027 calendar is open now.</p>'+
+    '<div id="printable">'+legalHTML(true)+reviewHTML(true)+'</div>';
+  }
+  wire();
+  window.scrollTo(0,0);
+}
+
+function ack(id,text,opt){var on=!!d[id];return '<label class="cyd-ack'+(on?' sel':'')+(opt?' opt':'')+'" data-f="'+id+'"><input type="checkbox" data-ack="'+id+'"'+(on?' checked':'')+'><span>'+text+'</span></label>'}
+
+function legalHTML(forPrint){
+  var t=d.terms||terms;
+  var law=esc(t.jurisdiction||'the State of North Carolina');
+  var pay=t.payTerms?esc(t.payTerms):'<span class="fill">[Advisor: enter your deposit, balance, and refund terms in Advisor access &rarr; My Terms]</span>';
+  var canc=t.cancelTerms?esc(t.cancelTerms):'<span class="fill">[Advisor: enter your cancellation and no-show policy in Advisor access &rarr; My Terms]</span>';
+  var resc=t.rescheduleTerms?esc(t.rescheduleTerms):'<span class="fill">[Advisor: enter your rescheduling window in Advisor access &rarr; My Terms]</span>';
+  var cap=t.liabilityCap?esc(t.liabilityCap):'<span class="fill">[the total amount the Client actually paid for the service giving rise to the claim]</span>';
+  return '<div class="cyd-legal"'+(forPrint?' style="max-height:none;overflow:visible"':'')+'>'+
+  '<h3>1. The parties and the service</h3><p>This Consultation Agreement is entered into between Patrick Jones, also known as Vic Hecho, doing business as Choose Your Destiny (the &ldquo;Advisor&rdquo;), and the individual named below (the &ldquo;Client&rdquo;). It governs all readings, subliminal and custom audio, coaching, consultations, and related goods and services the Advisor provides (the &ldquo;Services&rdquo;).</p>'+
+  '<h3>2. Spiritual and entertainment purposes only</h3><p>All Services are provided for spiritual, personal insight, and entertainment purposes only. Divination, tarot, energy work, records work, and subliminal audio are not recognized sciences. The Client acknowledges that nothing said, written, recorded, or delivered by the Advisor is a statement of verifiable fact about the past, present, or future.</p>'+
+  '<h3>3. Not professional advice</h3><p>The Advisor is not a physician, psychiatrist, psychologist, licensed therapist, attorney, accountant, or financial adviser, and does not provide medical, mental health, legal, tax, or financial advice. Nothing in the Services diagnoses, treats, cures, or prevents any condition. No doctor-patient, therapist-client, attorney-client, or fiduciary relationship is created by this Agreement. The Client agrees not to stop, start, or change any medication, treatment, or professional care on the basis of a session, and to consult a qualified licensed professional for those decisions.</p>'+
+  '<h3>4. No guarantee of results</h3><p>The Advisor makes no representation, warranty, or guarantee of any specific outcome, result, timeline, accuracy, or benefit. Individual experiences vary. Testimonials and examples are not promises of comparable results. Services are provided on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo; basis, and all implied warranties, including merchantability and fitness for a particular purpose, are disclaimed to the fullest extent permitted by law.</p>'+
+  '<h3>5. Age and capacity</h3><p>The Client represents that they are at least 18 years of age, of sound mind, not under the influence of any substance impairing judgment, and entering into this Agreement freely and voluntarily without coercion. Services are not offered to minors.</p>'+
+  '<h3>6. Client responsibility</h3><p>The Client retains sole and complete responsibility for all choices, decisions, actions, and inactions they take during or after any session, and for the consequences of those choices. The Client assumes all risk associated with participation in the Services. The Client further represents that the information provided in this intake is true and complete, and that withholding material health or safety information is at the Client&rsquo;s own risk.</p>'+
+  '<h3>7. Limitation of liability</h3><p>To the fullest extent permitted by law, the Advisor and Choose Your Destiny, along with their owners, contractors, and affiliates, shall not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages, or for any lost profits, lost opportunity, emotional distress, or damages arising from the Client&rsquo;s reliance on the Services. The total aggregate liability of the Advisor for any claim arising out of or relating to this Agreement or the Services shall not exceed '+cap+'. Some jurisdictions do not allow certain limitations, so portions of this section may not apply to the Client.</p>'+
+  '<h3>8. Release and hold harmless</h3><p>The Client releases, waives, discharges, and agrees to hold harmless and indemnify the Advisor and Choose Your Destiny from and against any and all claims, demands, damages, losses, liabilities, costs, and expenses, including reasonable attorneys&rsquo; fees, arising out of or related to the Services, the Client&rsquo;s participation in them, or the Client&rsquo;s breach of this Agreement, except to the extent caused by the Advisor&rsquo;s own gross negligence or willful misconduct.</p>'+
+  '<h3>9. Confidentiality, both directions</h3><p>The Advisor will keep the content of sessions and the Client&rsquo;s personal information confidential and will not sell or disclose it, except where disclosure is required by law, is necessary to prevent imminent harm, or is expressly authorized by the Client. The Client likewise agrees to keep the Advisor&rsquo;s proprietary methods, materials, scripts, audio files, and session content confidential, and not to copy, resell, redistribute, or publicly post them without written permission. Because sessions are not legally privileged communications, the Client should not treat them as confidential in a legal proceeding.</p>'+
+  '<h3>10. Recording</h3><p>Neither party may audio record, video record, screen capture, or livestream any session without the other party&rsquo;s prior written consent. Unauthorized recording is a material breach of this Agreement and grounds for immediate termination without refund.</p>'+
+  '<h3>11. Intellectual property</h3><p>All subliminal audio, written materials, artwork, and recordings the Advisor provides remain the intellectual property of Choose Your Destiny and are licensed to the Client for personal, non-commercial, non-transferable use only.</p>'+
+  '<h3>12. Payment, deposits, and refunds</h3><p>'+pay+'</p>'+
+  '<h3>13. Cancellation and no-shows</h3><p>'+canc+'</p>'+
+  '<h3>14. Rescheduling</h3><p>'+resc+'</p>'+
+  '<h3>15. Conduct and right to refuse or end a session</h3><p>Both parties agree to conduct themselves respectfully. The Advisor reserves the sole right to decline, pause, or immediately end any session or working relationship, with or without cause, including where the Client is abusive, harassing, discriminatory, intoxicated, in acute crisis requiring licensed care, or requesting services the Advisor does not provide. Where the Advisor ends a session without cause, a prorated refund will be issued; where a session is ended because of the Client&rsquo;s conduct, no refund is owed.</p>'+
+  '<h3>16. Marketing and testimonials</h3><p>The Advisor will not use the Client&rsquo;s name, likeness, or session content in marketing unless the Client opts in below. Consent is optional, is not a condition of booking, and may be withdrawn at any time by written request, subject to materials already published.</p>'+
+  '<h3>17. Data and records</h3><p>Intake responses and this signed Agreement are stored by the Advisor for business records, client care, and optional email or social communication. The Client may request a copy, a correction, or deletion of their record at any time by written request.</p>'+
+  '<h3>18. Governing law and venue</h3><p>This Agreement is governed by the laws of '+law+', without regard to its conflict-of-law rules. The parties agree that the exclusive venue for any dispute shall be the state or federal courts located in '+law+', and each party consents to personal jurisdiction there.</p>'+
+  '<h3>19. Entire agreement and severability</h3><p>This Agreement is the entire agreement between the parties regarding the Services and supersedes any prior discussions or representations. If any provision is found unenforceable, the remaining provisions stay in full force and the unenforceable provision shall be modified to the minimum extent necessary to make it enforceable. This Agreement may be amended only in writing. Failure to enforce a provision is not a waiver of it.</p>'+
+  '<h3>20. Electronic signature</h3><p>The parties agree this Agreement may be executed electronically, that a typed name and drawn signature constitute valid signatures, and that an electronic copy has the same legal force and effect as an original.</p>'+
+  '</div>';
+}
+
+function row(label,val){if(val==null||val===''||(val&&val.length===0))return '';return '<div><b>'+esc(label)+'</b><span>'+esc(Array.isArray(val)?val.join(', '):val)+'</span></div>'}
+function reviewHTML(forPrint){
+  var addr=[d.addr1,d.addr2,d.city,d.state,d.zip,d.country].filter(Boolean).join(', ');
+  var acks=[['a_adult','18 or older, voluntary'],['a_ent','Entertainment / spiritual purposes'],['a_nonpro','Not professional advice'],['a_noguar','No guaranteed outcomes'],['a_risk','Assumes risk, releases liability'],['a_rec','No recording without consent'],['a_terms','Payment &amp; cancellation terms'],['a_esign','E-signature consent']].filter(function(a){return d[a[0]]}).map(function(a){return a[1]}).join(' &middot; ');
+  var h='<div class="cyd-review">'+
+    row('Full legal name',d.name)+row('Goes by',d.preferred)+row('Email',d.email)+row('Phone',d.phone)+row('Social',d.social)+row('Found via',d.found)+row('Mailing address',addr)+
+    row('Booking',d.services)+row('Birth data',[d.bdate,d.btime,d.bplace].filter(Boolean).join(' · '))+row('Experience',d.exp)+row('Intention',d.intent)+row('Preferred dates',d.dates)+row('Budget',d.budget)+
+    row('Health notes',d.health)+row('Under professional care',d.support)+
+    (acks?'<div><b>Acknowledged</b><span>'+acks+'</span></div>':'')+
+    row('Media release',d.a_media?'Granted':'Declined')+
+    row('Newsletter',d.a_news?'Opted in':'Declined')+
+    row('Signed name',d.signName)+row('Date signed',d.signDate)+
+    (forPrint&&d.sig?'<div><b>Signature</b><span><img src="'+d.sig+'" alt="signature" style="max-height:80px"></span></div>':'')+
+  '</div>';
+  return (forPrint?'<h3 style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:24px 0 8px">Client record</h3>':'<div style="margin-top:32px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Review your answers</div>')+h;
+}
+
+function collect(){
+  body.querySelectorAll('input[id^=f_],select[id^=f_],textarea[id^=f_]').forEach(function(el){d[el.id.slice(2)]=el.value});
+  var svc=body.querySelector('#svc');
+  if(svc)d.services=Array.prototype.map.call(svc.querySelectorAll('input:checked'),function(i){return i.value});
+  var sup=body.querySelector('input[name=support]:checked');if(sup)d.support=sup.value;
+  body.querySelectorAll('input[data-ack]').forEach(function(el){d[el.dataset.ack]=el.checked});
+  // the single combined acknowledgment records each individual provision it covers,
+  // so exported records and printed agreements stay itemised and defensible
+  if('a_all' in d)ACK_COVERS.forEach(function(k){d[k]=!!d.a_all});
+  saveDraft();
+}
+
+function flag(id,msg){var f=body.querySelector('[data-f="'+id+'"]');if(!f)return;f.classList.add('bad');if(!f.querySelector('.err')){var e=document.createElement('div');e.className='err';e.textContent=msg;f.appendChild(e)}}
+function validate(){
+  body.querySelectorAll('.bad').forEach(function(f){f.classList.remove('bad')});
+  body.querySelectorAll('.err').forEach(function(e){e.remove()});
+  var bad=[];
+  function need(id,msg){if(!String(d[id]||'').trim()){flag(id,msg);bad.push(id)}}
+  if(step===0){need('name','Please enter your full legal name.');need('phone','Please enter a phone number.');
+    if(!String(d.email||'').trim()){flag('email','Please enter your email.');bad.push('email')}
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim())){flag('email','That email does not look right.');bad.push('email')}
+    need('found','Please let me know how you found me.');}
+  if(step===1){if(!(d.services||[]).length){flag('services','Please choose at least one service.');bad.push('services')}
+    need('bdate','Please enter your birth date.');need('intent','Please share your intention or question.');}
+  if(step===2&&TW.requireHealth){need('health','Please add a note, or write “none”.');}
+  if(step===3){if(!d.a_all){flag('a_all','Please confirm you have read and accept the agreement.');bad.push('a_all')}}
+  if(step===4){need('signName','Please type your full legal name.');need('signDate','Please confirm the date.');
+    if(String(d.signName||'').trim()&&String(d.name||'').trim()&&d.signName.trim().toLowerCase()!==d.name.trim().toLowerCase())flag('signName','Heads up: this does not match the legal name you gave in step 1.');
+    if(!d.sig){flag('sig','Please draw your signature.');bad.push('sig')}}
+  if(bad.length){var el=body.querySelector('.bad');if(el)el.querySelector('input,select,textarea')&&el.querySelector('input,select,textarea').focus()}
+  return bad.length===0;
+}
+
+function submitRecord(){
+  var rec=JSON.parse(JSON.stringify(d));
+  rec.id='CYD-'+Date.now().toString(36).toUpperCase();
+  rec.submittedAt=new Date().toISOString();
+  rec.agreementVersion='1.0';
+  rec.terms=JSON.parse(JSON.stringify(terms));
+  rec.source=MODE;
+  if(MODE==='advisor'){var all=load();all.unshift(rec);save(all)}
+  d=rec;
+  dl('cyd-intake-'+slug(d.name)+'-'+rec.id+'.json',JSON.stringify(rec,null,2));
+  if(MODE==='public')deliver(rec);
+  try{localStorage.setItem('cyd_booking_prefill',JSON.stringify({name:rec.name,email:rec.email,phone:rec.phone,service:(rec.services||[])[0]||''}))}catch(e){}
+  try{localStorage.removeItem(DKEY)}catch(e){}
+  step=5;render();
+}
+
+/* public mode only: get the completed intake to the advisor */
+function deliver(rec){
+  if(SUBMIT_ENDPOINT){
+    try{
+      fetch(SUBMIT_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status)})
+        .catch(function(){d.deliveryFailed=true;render()});
+    }catch(e){d.deliveryFailed=true}
+  }
+}
+function bookingLink(){
+  var q=[];
+  if(d.name)q.push('name='+encodeURIComponent(d.name));
+  if(d.email)q.push('email='+encodeURIComponent(d.email));
+  if(d.phone)q.push('phone='+encodeURIComponent(d.phone));
+  return BOOKING_URL+(q.length?'?'+q.join('&'):'');
+}
+function mailtoLink(rec){
+  var L=['New client intake — '+(rec.name||''),'','Submitted: '+new Date(rec.submittedAt).toLocaleString(),'Record: '+rec.id,'',
+    'Name: '+(rec.name||''),'Email: '+(rec.email||''),'Phone: '+(rec.phone||''),'Social: '+(rec.social||''),'Found via: '+(rec.found||''),'',
+    'Booking: '+((rec.services||[]).join('; ')),'Birth data: '+[rec.bdate,rec.btime,rec.bplace].filter(Boolean).join(' / '),'Preferred: '+(rec.dates||''),'',
+    'Intention: '+(rec.intent||''),'','Agreement accepted and signed by '+(rec.signName||'')+' on '+(rec.signDate||'')+'.',
+    'Newsletter: '+(rec.a_news?'opted in':'declined')+'. Media release: '+(rec.a_media?'granted':'declined')+'.','',
+    'The full record, including the signature image, is in the JSON file downloaded with this intake — please attach it.'];
+  return 'mailto:'+ADVISOR_EMAIL+'?subject='+encodeURIComponent('New client intake — '+(rec.name||''))+'&body='+encodeURIComponent(L.join('\n'));
+}
+
+function initPad(){
+  var c=body.querySelector('#sigpad');if(!c)return;
+  var ratio=window.devicePixelRatio||1;
+  var w=c.getBoundingClientRect().width||600;
+  c.width=w*ratio;c.height=170*ratio;
+  var ctx=c.getContext('2d');ctx.scale(ratio,ratio);ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#0a0a0a';
+  if(d.sig){var img=new Image();img.onload=function(){ctx.drawImage(img,0,0,w,170)};img.src=d.sig}
+  var drawing=false;
+  function pos(e){var r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+  c.addEventListener('pointerdown',function(e){drawing=true;sigDirty=true;c.setPointerCapture(e.pointerId);var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault()});
+  c.addEventListener('pointermove',function(e){if(!drawing)return;var p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()});
+  function end(){if(!drawing)return;drawing=false;if(sigDirty){d.sig=c.toDataURL('image/png');saveDraft()}}
+  c.addEventListener('pointerup',end);c.addEventListener('pointerleave',end);c.addEventListener('pointercancel',end);
+  body.querySelector('#sigclear').addEventListener('click',function(){ctx.clearRect(0,0,c.width,c.height);d.sig='';sigDirty=false;saveDraft()});
+}
+
+function wire(){
+  body.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){
+    collect();var dir=+b.dataset.go;
+    if(dir>0&&!validate())return;
+    step=Math.max(0,Math.min(5,step+dir));render();
+  })});
+  body.querySelectorAll('.cyd-pick input,.cyd-ack input').forEach(function(i){i.addEventListener('change',function(){
+    if(i.type==='radio'){var g=i.closest('.cyd-picks');if(g)g.querySelectorAll('.cyd-pick').forEach(function(p){p.classList.remove('sel')})}
+    i.closest('.cyd-pick,.cyd-ack').classList.toggle('sel',i.checked);collect();
+  })});
+  body.querySelectorAll('input,select,textarea').forEach(function(el){el.addEventListener('change',collect)});
+  if(step===4)initPad();
+  if(step===3){
+    var legal=body.querySelector('.cyd-legal'),next=body.querySelector('#tosign'),fill=body.querySelector('#readfill'),hint=body.querySelector('#readhint');
+    var read=!!d.agreementRead;
+    function gate(){
+      next.disabled=!read;
+      hint.textContent=read?'':'Scroll to the end of the agreement to continue.';
+    }
+    function onScroll(){
+      var max=legal.scrollHeight-legal.clientHeight;
+      var pct=max<=2?1:Math.min(1,(legal.scrollTop+2)/max);
+      fill.style.width=(pct*100).toFixed(1)+'%';
+      if(pct>=0.995&&!read){read=true;d.agreementRead=true;saveDraft();gate()}
+    }
+    legal.addEventListener('scroll',onScroll);
+    gate();onScroll();
+  }
+  var s=body.querySelector('#submit');if(s)s.addEventListener('click',function(){collect();if(validate())submitRecord()});
+  var p=body.querySelector('#print');if(p)p.addEventListener('click',function(){window.print()});
+  var dr=body.querySelector('#dlrec');if(dr)dr.addEventListener('click',function(){dl('cyd-intake-'+slug(d.name)+'-'+(d.id||'copy')+'.json',JSON.stringify(d,null,2))});
+  var ag=body.querySelector('#again');if(ag)ag.addEventListener('click',function(){d={};step=0;sigDirty=false;render()});
+  if(step===4&&!d.signDate){var t=new Date(),iso=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');var f=body.querySelector('#f_signDate');if(f){f.value=iso;d.signDate=iso}}
+}
+
+/* ---- advisor records panel (advisor build only) ---- */
+var adm=$('#cyd-admin');
+function on(sel,ev,fn){var e=$(sel);if(e)e.addEventListener(ev,fn)}
+if(MODE!=='advisor'){
+  // a client's browser must never hold other clients' records
+  [adm,$('#cyd-advisor'),$('#cyd-file')].forEach(function(e){if(e)e.remove()});
+  var fs=document.querySelector('.cyd-foot span');
+  if(fs)fs.textContent='Your information is sent only to Choose Your Destiny. Nothing is stored on this site.';
+}
+function renderRecords(){
+  var all=load();$('#cyd-count').textContent=all.length+' record'+(all.length===1?'':'s');
+  if(!all.length){$('#cyd-records').innerHTML='<div class="cyd-empty">No submissions saved on this device yet.</div>';return}
+  $('#cyd-records').innerHTML='<table class="cyd-tbl"><thead><tr><th>Submitted</th><th>Client</th><th>Contact</th><th>Booking</th><th></th></tr></thead><tbody>'+
+  all.map(function(r,i){return '<tr><td>'+esc(new Date(r.submittedAt).toLocaleString())+'<div style="color:#3a3a3a;font-size:11px">'+esc(r.id)+'</div></td>'+
+  '<td><b style="font-size:13px;letter-spacing:0;text-transform:none">'+esc(r.name)+'</b></td>'+
+  '<td>'+esc(r.email)+'<div>'+esc(r.phone)+'</div></td>'+
+  '<td>'+esc((r.services||[]).join(', '))+'</td>'+
+  '<td style="white-space:nowrap"><button class="cyd-btn ghost sm" data-rec="'+i+'">JSON</button> <button class="cyd-btn ghost sm" data-del="'+i+'">Delete</button></td></tr>'}).join('')+'</tbody></table>';
+  $('#cyd-records').querySelectorAll('[data-rec]').forEach(function(b){b.addEventListener('click',function(){var r=load()[+b.dataset.rec];dl('cyd-intake-'+slug(r.name)+'-'+r.id+'.json',JSON.stringify(r,null,2))})});
+  $('#cyd-records').querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){var all=load(),r=all[+b.dataset.del];if(confirm('Delete the record for '+r.name+'? This cannot be undone.')){all.splice(+b.dataset.del,1);save(all);renderRecords()}})});
+}
+on('#cyd-terms','click',function(){
+  var s=$('#cyd-settings');s.classList.toggle('cyd-hide');
+  if(!s.classList.contains('cyd-hide'))TERMFIELDS.forEach(function(k){$('#s_'+k).value=terms[k]||''});
+});
+on('#cyd-save-terms','click',function(){
+  TERMFIELDS.forEach(function(k){terms[k]=$('#s_'+k).value.trim()});
+  try{localStorage.setItem(SKEY,JSON.stringify(terms))}catch(e){alert('Could not save: '+e.message)}
+  $('#cyd-saved').textContent='Saved.';setTimeout(function(){$('#cyd-saved').textContent=''},2500);
+  if(step===3)render();
+});
+on('#cyd-advisor','click',function(){adm.classList.toggle('cyd-hide');if(!adm.classList.contains('cyd-hide')){renderRecords();adm.scrollIntoView&&0}});
+on('#cyd-close','click',function(){adm.classList.add('cyd-hide')});
+on('#cyd-json','click',function(){dl('cyd-all-records-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(load(),null,2))});
+on('#cyd-csv','click',function(){
+  var all=load();if(!all.length)return alert('No records to export.');
+  var cols=['id','submittedAt','name','preferred','email','phone','social','found','addr1','addr2','city','state','zip','country','services','bdate','btime','bplace','exp','intent','dates','budget','health','support','a_media','a_news','signName','signDate','agreementVersion'];
+  function cell(v){if(Array.isArray(v))v=v.join('; ');if(v===true)v='yes';if(v===false)v='no';v=String(v==null?'':v);return '"'+v.replace(/"/g,'""')+'"'}
+  var csv=cols.join(',')+'\r\n'+all.map(function(r){return cols.map(function(c){return cell(r[c])}).join(',')}).join('\r\n');
+  dl('cyd-clients-'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+csv,'text/csv');
+});
+on('#cyd-db','click',function(){
+  var all=load();
+  if(!all.length)return alert('No records to compile yet.');
+  var db={
+    database:'Choose Your Destiny \u2014 client intake',
+    generatedAt:new Date().toISOString(),
+    recordCount:all.length,
+    agreementVersion:'1.0',
+    termsInForce:terms,
+    records:all
+  };
+  dl('cyd-database-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db,null,2));
+});
+on('#cyd-import','click',function(){$('#cyd-file').click()});
+on('#cyd-file','change',function(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var v=JSON.parse(r.result),inc=Array.isArray(v)?v:[v],all=load(),seen={};
+    all.forEach(function(x){seen[x.id]=1});
+    var added=0;inc.forEach(function(x){if(x&&x.id&&!seen[x.id]){all.push(x);added++}});
+    all.sort(function(a,b){return String(b.submittedAt).localeCompare(String(a.submittedAt))});
+    save(all);renderRecords();alert('Imported '+added+' new record'+(added===1?'':'s')+'.');
+  }catch(err){alert('Could not read that file: '+err.message)}};
+  r.readAsText(f);e.target.value='';
+});
+
+function applyTweaks(){
+  var r=document.getElementById('cyd-intake');
+  r.style.setProperty('--gold-500',TW.accent);
+  document.querySelector('.cyd-blocks').style.display=TW.showBlocks?'flex':'none';
+}
+
+/* ---- tweaks panel (plain JS, no external deps so the form stays offline) ---- */
+(function(){
+  var panel=document.getElementById('tw'),bd=document.getElementById('tw-bd');
+  function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+  function set(k,v){TW[k]=v;try{collect()}catch(e){}applyTweaks();render();
+    var edits={};edits[k]=v;
+    window.parent.postMessage({type:'__edit_mode_set_keys',edits:edits},'*');
+    window.dispatchEvent(new CustomEvent('tweakchange',{detail:edits}));
+  }
+  function section(l){bd.appendChild(el('div','sec',l))}
+  function color(key,label,options){
+    var r=el('div','row',''),g=el('div','sw');
+    r.appendChild(el('label','tg','<span>'+label+'</span>'));
+    options.forEach(function(o){
+      var b=el('button',TW[key]===o?'sel':'');b.style.background=o;b.title=o;
+      b.addEventListener('click',function(){set(key,o);g.querySelectorAll('button').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel')});
+      g.appendChild(b);
+    });
+    r.appendChild(g);r.querySelector('label').style.marginBottom='6px';bd.appendChild(r);
+  }
+  function toggle(key,label){
+    var r=el('div','row'),lb=el('label','tg','<span>'+label+'</span>'),i=el('input');
+    i.type='checkbox';i.checked=!!TW[key];
+    i.addEventListener('change',function(){set(key,i.checked)});
+    lb.appendChild(i);r.appendChild(lb);bd.appendChild(r);
+  }
+  section('Brand');
+  color('accent','Action color',['#f0c93e','#5c3a8f','#2f6fd1','#5fa858']);
+  toggle('showBlocks','Color-block strip');
+  section('Form');
+  toggle('showBudget','Ask for budget');
+  toggle('requireHealth','Require health notes');
+  window.addEventListener('message',function(e){
+    var t=e.data&&e.data.type;
+    if(t==='__activate_edit_mode')panel.classList.add('on');
+    else if(t==='__deactivate_edit_mode')panel.classList.remove('on');
+  });
+  window.parent.postMessage({type:'__edit_mode_available'},'*');
+  document.getElementById('tw-x').addEventListener('click',function(){
+    panel.classList.remove('on');
+    window.parent.postMessage({type:'__edit_mode_dismissed'},'*');
+  });
+})();
+
+loadTerms();loadDraft();
+if(step===5)step=0;
+applyTweaks();
+render();
+})();
+</script>
+{% endraw %}
+
+{% schema %}
+{ "name": "CYD Client Intake", "settings": [] }
+{% endschema %}

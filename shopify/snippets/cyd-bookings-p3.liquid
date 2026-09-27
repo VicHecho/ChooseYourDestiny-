@@ -1,0 +1,158 @@
+{% raw %}  if(step===1)body.innerHTML='<h2 class="cyd-h">Pick a date.</h2><p class="cyd-sub">Open days are shown in white with the number of windows left. Move through the year with the arrows.</p>'+
+    '<div class="cyd-f full" data-f="date">'+calendarHTML()+'</div>'+
+    '<div class="cyd-legendrow">'+TIERS.map(function(tier){return '<span><i style="background:'+tier.color+'"></i> '+tier.label+' \u00b7 '+tier.window+'</span>'}).join('')+'<span><i style="background:var(--paper-100)"></i> Closed or full</span></div>'+
+    '<p class="cyd-sub" style="font-size:13px;margin-top:10px">Limited and after-hours availability and fees may vary.</p>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  if(step===2){
+    var day=new Date(+b.date.split('-')[0],+b.date.split('-')[1]-1,+b.date.split('-')[2]).getDay();
+    var taken=takenKeys();
+    var dayslots=avail.days[day]||[];
+    var groups=TIERS.map(function(tier){
+      var mine=sortInTier(dayslots.filter(function(t){return tierFor(t).key===tier.key}),tier);
+      if(!mine.length)return '';
+      return '<div class="cyd-tier"><div class="cyd-tierhd"><i style="background:'+tier.color+'"></i><b>'+tier.label+'</b><span>'+tier.window+'</span></div>'+
+        (tier.key==='regular'?'':'<p class="cyd-tiernote">'+tier.note+'</p>')+
+        '<div class="cyd-slots">'+mine.map(function(t){
+          var isTaken=!!taken[b.date+' '+t];
+          return '<button type="button" class="cyd-slot'+(b.time===t?' sel':'')+'" data-time="'+t+'"'+(isTaken?' disabled title="Already booked"':'')+'>'+pretty12(t)+'</button>';
+        }).join('')+'</div></div>';
+    }).join('');
+    var slots=groups||'<p class="cyd-sub">No windows left on this day.</p>';
+    body.innerHTML='<h2 class="cyd-h">'+esc(pretty(b.date))+'</h2><p class="cyd-sub">'+esc(b.duration)+' minutes for '+esc(b.service)+'. Times are '+esc(avail.tz)+'. Regular hours run at standard rates; limited and after-hours windows may vary in both availability and fee.</p>'+
+      '<div class="cyd-f full" data-f="time"><div class="cyd-slots">'+slots+'</div></div>'+
+      (MODE==='public'?'<div class="cyd-note">Times shown are my usual windows. I will confirm your slot by email, or offer the nearest alternative if someone reached it first.</div>':'')+
+      '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn" data-go="1">Continue</button></div>';
+  }
+  if(step===3)body.innerHTML='<h2 class="cyd-h">Where should I reach you?</h2><p class="cyd-sub">'+esc(pretty(b.date))+' at '+esc(pretty12(b.time))+', '+esc(b.duration)+' minutes.</p>'+
+    '<div class="cyd-grid">'+
+    field('name','Full name','<input id="f_name" type="text" value="'+esc(b.name)+'" placeholder="Your name">','',1)+
+    field('email','Email','<input id="f_email" type="email" value="'+esc(b.email)+'" placeholder="you@example.com">','',1)+
+    field('phone','Phone','<input id="f_phone" type="tel" value="'+esc(b.phone)+'">','',0)+
+    field('firsttime','Have we worked together before?','<select id="f_firsttime"><option value="">Select\u2026</option>'+['This is my first session','I am a returning client'].map(function(o){return '<option'+(b.firsttime===o?' selected':'')+'>'+o+'</option>'}).join('')+'</select>','',0)+
+    field('notes','Anything I should know before we meet','<textarea id="f_notes" placeholder="Optional. What you would like to focus on, or anything affecting timing.">'+esc(b.notes)+'</textarea>','',0)+
+    '</div>'+
+    '<label class="cyd-upsell"><input type="checkbox" id="c_book"'+(b.book?' checked':'')+'><span><b>Add the <i>Metaphysical Dayplanner \u2014 Hack The Matrix 2026</i>, Deluxe Edition \u2014 $49.99</b>Paperback copy, early access to the digital edition, and a limited edition Choose Your Destiny tote while supplies last. Tick this and I will add it to your invoice.</span></label>'+
+    reviewHTML()+
+    '<div class="cyd-note">'+(MODE==='advisor'?'Choosing a time here holds it for you.':'Choosing a time here sends me your request.')+' I will confirm the date with you by phone or email before our session.</div>'+
+    '<div class="cyd-actions"><button class="cyd-btn ghost" data-go="-1">Back</button><span class="cyd-spacer"></span><button class="cyd-btn dark" id="confirm">'+(MODE==='advisor'?'Confirm booking':'Request this time')+'</button></div>';
+  if(step===4){
+    var msg=MODE==='advisor'
+      ? 'Your session is on my calendar. I will confirm the date with you by phone or email before we meet. Add it to your own calendar with the button below.'
+      : (SUBMIT_ENDPOINT&&!b.deliveryFailed
+          ? 'Your request has been sent. I will confirm the date with you by phone or email at <b>'+esc(b.email)+'</b> before anything is final.'
+          : 'Your request is ready to send. <b>Please press the email button below</b> so it reaches me \u2014 I will then confirm the date with you by phone or email at <b>'+esc(b.email)+'</b>.');
+    body.innerHTML='<div class="cyd-done"><div class="mark">&#10003;</div><h2 class="cyd-h">'+(MODE==='advisor'?'You\u2019re booked.':'Almost there.')+'</h2>'+
+      '<div class="cyd-when">'+esc(pretty(b.date))+'<br>'+esc(pretty12(b.time))+' \u2013 '+esc(pretty12(endTime(b.time,b.duration)))+' '+esc(avail.tz)+'</div>'+
+      '<p class="cyd-sub" style="margin:0 auto">'+msg+'</p>'+
+      '<div class="cyd-actions" style="justify-content:center">'+
+      (MODE==='public'&&(!SUBMIT_ENDPOINT||b.deliveryFailed)?'<a class="cyd-btn" style="text-decoration:none" href="'+mailtoLink(b)+'">Email my request</a>':'')+
+      '<button class="cyd-btn'+(MODE==='public'&&(!SUBMIT_ENDPOINT||b.deliveryFailed)?' ghost':'')+'" id="ics">Add to my calendar</button>'+
+      (MODE==='advisor'?'<button class="cyd-btn ghost" id="again">Book another session</button>':'')+
+      '</div>'+
+      (b.time&&tierFor(b.time).key!=='regular'?'<div class="cyd-note warn" style="text-align:left;max-width:62ch;margin:32px auto 0">Your session falls in <b>'+esc(tierFor(b.time).label.toLowerCase())+'</b> ('+esc(tierFor(b.time).window)+'). Availability and fees for these hours may vary \u2014 I will confirm both with you before the session.</div>':'')+
+      '<div class="cyd-note" style="text-align:left;max-width:62ch;margin:32px auto 0">Please read and sign the client intake and consultation agreement before our first session. <a href="'+INTAKE_URL+'">Open the intake form</a>.</div>'+
+      '</div>';
+  }
+  wire();window.scrollTo(0,0);
+}
+
+function field(id,label,html,hint,req){return '<div class="cyd-f'+(id==='notes'?' full':'')+'" data-f="'+id+'"><label for="f_'+id+'">'+esc(label)+(req?' <span class="req">*</span>':'')+(hint?'<div class="hint">'+hint+'</div>':'')+'</label>'+html+'</div>'}
+
+function calendarHTML(){
+  var first=new Date(YEAR,month,1).getDay(),days=new Date(YEAR,month+1,0).getDate(),taken=takenKeys();
+  var cells='';
+  for(var i=0;i<first;i++)cells+='<div class="cyd-day empty"></div>';
+  for(var dnum=1;dnum<=days;dnum++){
+    var ds=iso(YEAR,month,dnum),dow=new Date(YEAR,month,dnum).getDay();
+    var slots=(avail.days[dow]||[]).filter(function(t){return !taken[ds+' '+t]});
+    var blocked=avail.blocked.indexOf(ds)>-1;
+    var open=!blocked&&slots.length>0;
+    var bands=open?TIERS.filter(function(tier){return slots.some(function(t){return tierFor(t).key===tier.key})}):[];
+    cells+='<button type="button" class="cyd-day'+(b.date===ds?' sel':'')+'" data-date="'+ds+'"'+(open?'':' disabled')+'>'+dnum+
+      (open?'<i>'+slots.length+' open</i><u>'+bands.map(function(tier){return '<s style="background:'+tier.color+'"></s>'}).join('')+'</u>':'<i>\u00a0</i>')+'</button>';
+  }
+  return '<div class="cyd-monthbar"><button type="button" id="prevm"'+(month===0?' disabled':'')+'>&larr; Prev</button><b>'+MONTHS[month]+' '+YEAR+'</b><button type="button" id="nextm"'+(month===11?' disabled':'')+'>Next &rarr;</button></div>'+
+    '<div class="cyd-dow">'+DOW.map(function(d){return '<span>'+d+'</span>'}).join('')+'</div>'+
+    '<div class="cyd-cal">'+cells+'</div>';
+}
+
+function row(label,val){if(val==null||val==='')return '';return '<div><b>'+esc(label)+'</b><span>'+esc(val)+'</span></div>'}
+function reviewHTML(){
+  return '<div style="margin-top:32px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Your booking</div><div class="cyd-review">'+
+    row('Session',b.service)+row('Length',b.duration?b.duration+' minutes':'')+
+    (b.duration&&RATES[b.duration]?row('Fee',money(RATES[b.duration].now)+'  (regularly '+money(RATES[b.duration].was)+')'):'')+
+    (b.book?row('Also sending','Metaphysical Dayplanner \u2014 Hack The Matrix 2026, Deluxe Edition ($49.99)'):'')+
+    row('Date',b.date?pretty(b.date):'')+row('Time',b.time?pretty12(b.time)+' \u2013 '+pretty12(endTime(b.time,b.duration))+' '+avail.tz:'')+
+    (b.time?row('Rate band',tierFor(b.time).label+' ('+tierFor(b.time).window+')'+(tierFor(b.time).key==='regular'?'':' \u2014 fees may vary')):'')+
+  '</div>';
+}
+
+function collect(){
+  body.querySelectorAll('input[id^=f_],select[id^=f_],textarea[id^=f_]').forEach(function(el){b[el.id.slice(2)]=el.value});
+  var bk=body.querySelector('#c_book');if(bk)b.book=bk.checked;
+  saveDraft();
+}
+function flag(id,msg){var f=body.querySelector('[data-f="'+id+'"]');if(!f)return;f.classList.add('bad');if(!f.querySelector('.err')){var e=document.createElement('div');e.className='err';e.textContent=msg;f.appendChild(e)}}
+function validate(){
+  body.querySelectorAll('.bad').forEach(function(f){f.classList.remove('bad')});
+  body.querySelectorAll('.err').forEach(function(e){e.remove()});
+  var bad=[];
+  if(step===0){if(!b.service){flag('service','Please choose a session type.');bad.push(1)}
+    if(!b.duration){flag('duration','Please choose a length.');bad.push(1)}}
+  if(step===1&&!b.date){flag('date','Please pick a date.');bad.push(1)}
+  if(step===2&&!b.time){flag('time','Please pick a time.');bad.push(1)}
+  if(step===3){
+    if(!String(b.name||'').trim()){flag('name','Please enter your name.');bad.push(1)}
+    if(!String(b.email||'').trim()){flag('email','Please enter your email.');bad.push(1)}
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(b.email.trim())){flag('email','That email does not look right.');bad.push(1)}
+  }
+  return bad.length===0;
+}
+
+function confirmBooking(){
+  var rec=JSON.parse(JSON.stringify(b));
+  rec.id='CYD-BK-'+Date.now().toString(36).toUpperCase();
+  rec.createdAt=new Date().toISOString();
+  rec.year=YEAR;rec.timezone=avail.tz;rec.status='booked';rec.source=MODE;rec.replied=false;
+  rec.endTime=endTime(rec.time,rec.duration);
+  rec.fee=RATES[rec.duration]?RATES[rec.duration].now:'';
+  rec.book=!!rec.book;
+  rec.tier=tierFor(rec.time).key;
+  rec.tierLabel=tierFor(rec.time).label;
+  if(MODE==='advisor'){
+    var taken=takenKeys();
+    if(taken[rec.date+' '+rec.time]){alert('That time was just taken. Please choose another.');step=2;render();return}
+    var all=load();all.push(rec);all.sort(function(x,y){return (x.date+x.time).localeCompare(y.date+y.time)});save(all);
+  }else{
+    rec.status='requested';
+    /* No backend means the client's own mail app is the only delivery path, so
+       open it for them rather than hoping they find the button. The button
+       stays on the confirmation screen as a manual retry. */
+    if(!SUBMIT_ENDPOINT){setTimeout(function(){try{window.location.href=mailtoLink(rec)}catch(e){}},600)}
+    if(SUBMIT_ENDPOINT){
+      try{fetch(SUBMIT_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status)})
+        .catch(function(){b.deliveryFailed=true;render()})}catch(e){b.deliveryFailed=true}
+    }
+  }
+  b=rec;
+  try{localStorage.removeItem(DKEY)}catch(e){}
+  step=4;render();
+}
+
+function mailtoLink(r){
+  var L=['Session request \u2014 '+(r.name||''),'',
+    'Date: '+(r.date?pretty(r.date):''),'Time: '+(r.time?pretty12(r.time)+' \u2013 '+pretty12(endTime(r.time,r.duration)):'')+' '+avail.tz,
+    'Session: '+(r.service||''),'Length: '+(r.duration||'')+' minutes',
+    'Fee: '+(RATES[r.duration]?money(RATES[r.duration].now)+' (regularly '+money(RATES[r.duration].was)+')':''),
+    'Book requested: '+(r.book?'yes \u2014 Dayplanner Deluxe Edition, $49.99':'no'),
+    'Rate band: '+(r.time?tierFor(r.time).label+' ('+tierFor(r.time).window+')':''),'',
+    'Name: '+(r.name||''),'Email: '+(r.email||''),'Phone: '+(r.phone||''),'Status: '+(r.firsttime||''),'',
+    'Notes: '+(r.notes||'\u2014')];
+  return 'mailto:'+ADVISOR_EMAIL+'?subject='+encodeURIComponent('2027 session request \u2014 '+(r.name||''))+'&body='+encodeURIComponent(L.join('\n'));
+}
+
+function icsFor(r){
+  function stamp(dstr,t){var p=dstr.split('-'),q=t.split(':');return p[0]+p[1]+p[2]+'T'+q[0]+q[1]+'00'}
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Choose Your Destiny//2027 Bookings//EN','BEGIN:VEVENT',
+{% endraw %}

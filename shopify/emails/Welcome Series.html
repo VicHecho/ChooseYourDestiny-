@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome series — 4 emails</title>
+<style>
+:root{--ink:#0a0a0a;--paper:#faf9f7;--gold:#f0c93e;--goldl:#ffe774;--violet:#5c3a8f;--blue:#2f6fd1;--green:#5fa858;--grey:#3a3a3a}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e4df;color:var(--ink);font:16px/1.6 'Assistant',-apple-system,'Segoe UI',sans-serif}
+a{color:var(--violet)}a:hover{color:var(--ink)}
+.wrap{max-width:860px;margin:0 auto;padding:48px 20px 96px}
+h1{font:600 46px/1.05 'Cormorant Garamond',Georgia,serif;margin:0 0 14px}
+.lede{max-width:64ch;color:var(--grey);margin:0 0 10px;text-wrap:pretty}
+.how{background:var(--paper);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:24px 28px;margin:32px 0 48px}
+.how h2{font:700 12px/1 'Assistant',sans-serif;letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+.how ol{margin:0;padding-left:20px;display:grid;gap:8px}
+.fill{background:var(--goldl);padding:1px 6px;font-weight:700}
+.list{display:grid;gap:22px}
+.em{background:#fff;border:2px solid var(--ink);display:grid;grid-template-columns:96px minmax(0,1fr)}
+.em .day{border-right:2px solid var(--ink);padding:16px 10px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.em .day b{font:600 34px/1 'Cormorant Garamond',Georgia,serif}
+.em .day small{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.em:nth-child(1) .day{background:var(--violet);color:#fff}
+.em:nth-child(2) .day{background:var(--gold)}
+.em:nth-child(3) .day{background:var(--blue);color:#fff}
+.em:nth-child(4) .day{background:var(--green)}
+.em .body{padding:18px 24px 20px}
+.meta{display:grid;grid-template-columns:92px minmax(0,1fr);gap:4px 12px;font-size:13px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #efeee9}
+.meta dt{font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);padding-top:2px}
+.meta dd{margin:0}
+.meta dd.subj{font-weight:700;font-size:15px}
+.em p{margin:0 0 10px;text-wrap:pretty}
+.btn{display:inline-block;margin:6px 0 12px;padding:12px 22px;background:var(--gold);color:var(--ink);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
+.btn:hover{background:var(--goldl);color:var(--ink)}
+.ps{font-size:14px;color:var(--grey);margin-top:14px}
+.sign{font-style:italic}
+@media(max-width:600px){.em{grid-template-columns:minmax(0,1fr)}.em .day{border-right:0;border-bottom:2px solid var(--ink);flex-direction:row;justify-content:center}}
+</style></head><body><div class="wrap">
+<h1>Welcome series</h1>
+<p class="lede">Four emails that go to every new subscriber over their first week: people who sign up through the wallpaper page, the newsletter box on the intake form, or your store footer.</p>
+<p class="lede">It moves from who you are, to the Dayplanner, to the class, to booking a session. Spots marked in <span class="fill">gold</span> are for your own words.</p>
+<div class="how"><h2>Setting this up in Shopify</h2>
+<ol>
+<li>Shopify admin → <b>Marketing</b> → <b>Automations</b> → <b>Create automation</b>. Choose the <b>Welcome new subscribers</b> template.</li>
+<li>Delete the discount step if the template includes one. Put in Email 1 below as the first email.</li>
+<li>Add a <b>Wait</b> step, then the next email. Use the delays listed on each card: send right away, then day 2, day 4 and day 7.</li>
+<li><b>Wait until the wallpaper page is live</b> at <code>/pages/wallpapers</code>. Email 1's button points there. If you want to start sooner, delete that button and the line above it.</li>
+<li>Turn the automation on. From then on it runs by itself for every new subscriber.</li>
+<li>Hold the daily Hack The Matrix emails back until someone has finished this series, so their first week isn't a double dose.</li>
+</ol></div>
+<div class="list">
+
+<article class="em"><div class="day"><small>Email</small><b>1</b><small>Right away</small></div><div class="body"><dl class="meta"><dt>Subject</dt><dd class="subj">You're in. Here's your door.</dd><dt>Preview</dt><dd>Your wallpapers, and what to expect from me.</dd></dl>
+<p>Welcome to Choose Your Destiny.</p><p>If you came for the wallpapers, they're unlocked and waiting for you:</p>
+<a class="btn" href="https://chooseyourdestiny.us/pages/wallpapers">Get your wallpapers</a> <span class="fill">[Link works once the wallpaper page is built]</span>
+<p>I'm Vic. I read runes and tarot, make custom sleep subliminals, and teach a way of running your day I call Hack The Matrix. <span class="fill">[One or two sentences on why you started this work]</span></p><p>Over the next week I'll send you three more short notes, then early-morning emails you can read before your coffee. Every one has an unsubscribe link, and I won't share your address.</p>
+<p class="sign">— Vic</p></div></article>
+
+<article class="em"><div class="day"><small>Email</small><b>2</b><small>Day 2</small></div><div class="body"><dl class="meta"><dt>Subject</dt><dd class="subj">The book behind all of this</dd><dt>Preview</dt><dd>The Metaphysical Dayplanner, and how to start it today.</dd></dl>
+<p><i>The Metaphysical Dayplanner — Hack The Matrix 2026</i> is where I put everything I teach into daily pages: where your attention goes, what you plan, and how you feel about it before it happens.</p><p>Here's a way to try it right now. Tonight, write one sentence about tomorrow in the past tense, as if it already went well. Read it once when you wake up.</p><p><span class="fill">[A short line from the book's introduction]</span></p>
+<a class="btn" href="https://chooseyourdestiny.us/products/untitled-sep8_18-26">See the Deluxe Edition, $49.99</a>
+<p class="ps">The Deluxe Edition comes with the paperback, early access to the digital edition, and a limited Choose Your Destiny tote while supplies last.</p>
+<p class="sign">— Vic</p></div></article>
+
+<article class="em"><div class="day"><small>Email</small><b>3</b><small>Day 4</small></div><div class="body"><dl class="meta"><dt>Subject</dt><dd class="subj">Learn it with me, live</dd><dt>Preview</dt><dd>The Hack The Matrix class, at $1 a minute right now.</dd></dl>
+<p>The book gives you the method. In the class, I walk you through it myself.</p><p>In a Hack The Matrix session I'll show you how to use the Dayplanner, where the soul's seat is and how to work from it, and how to put the concentration exercises to use on your own goals. You bring the goal, and we build your pages around it together.</p><p>Sessions run 30 to 120 minutes. Until January 1, 2027 they're $1 a minute: $30 for half an hour, $60 for an hour.</p>
+<a class="btn" href="https://chooseyourdestiny.us/pages/2027-bookings">Book a class</a>
+<p class="sign">— Vic</p></div></article>
+
+<article class="em"><div class="day"><small>Email</small><b>4</b><small>Day 7</small></div><div class="body"><dl class="meta"><dt>Subject</dt><dd class="subj">When you want a reading</dd><dt>Preview</dt><dd>What a session with me looks like, start to finish.</dd></dl>
+<p>Some people come for the book, some for the subliminals, and some just want a clear answer on one question. Here's how a session works:</p><p><b>1.</b> Fill in the short intake and agreement, so I know who I'm working with.<br><b>2.</b> Pick a time on my 2027 calendar.<br><b>3.</b> I confirm by email and we meet.</p><p>I offer rune and tarot readings, custom 8-hour sleep subliminals, energy and wellness coaching, and the Hack The Matrix class.</p>
+<a class="btn" href="https://chooseyourdestiny.us/pages/client-intake">Start your intake</a>
+<p>Starting tomorrow you'll get my morning emails: one short lesson, code or Dayplanner prompt each day.</p>
+<p class="sign">— Vic</p></div></article>
+
+</div></div></body></html>
