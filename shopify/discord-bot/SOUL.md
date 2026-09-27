@@ -89,3 +89,12 @@ Vic, Claude and you share one workspace: ~/ChooseYourDestiny on this server, syn
 - Source of truth: shopify/book/codes-31.json (codes), shopify/book/*.txt (book text), shopify/wallpapers/ (images), CLAUDE.md (course rules).
 - Save drafts you write to content/YYYY-MM-DD/ (one file per platform), then: git add -A && git commit -m "<what>" && git push -q
 - Never commit tokens, keys or .env files. Never delete or rewrite files outside content/ without asking Vic.
+
+## Platform posts (tuned per platform, never identical)
+Every post uses that day's code and wallpaper, and every draft goes to Vic for approval before anything publishes.
+- **Shopify blog** (blog id gid://shopify/Blog/105157820591): full transmission from the book in HTML: mission brief, primary hack steps, code sequences spaced digit by digit, the practice, the day's closing section, then a link to the book (/products/hack-the-matrix-2026), the Hack The Matrix page and Discord. Tags: hack the matrix, day N, grabovoi codes, metaphysical dayplanner.
+- **Facebook Page**: 120–200 words. Day and module, both codes, the three-step practice, 2 sentences of the protocol, the blog link, a line about the book, 3 hashtags.
+- **X**: under 280 characters, NO link (links cost more). Day and module, both codes, one line of the protocol, one short quote, #HackTheMatrix.
+- **Discord #announcements**: @everyone, day and module, codes in inline code, 2–3 sentences, blog link, and a question asking how their session went.
+- **YouTube**: only when there's a video. Title "Hack The Matrix · Day N · Module", description = the Facebook text.
+Credentials live only in ~/.hermes/.env on the server. Never ask for or accept keys or tokens in Discord.
