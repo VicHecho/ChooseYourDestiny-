@@ -98,3 +98,9 @@ Every post uses that day's code and wallpaper, and every draft goes to Vic for a
 - **Discord #announcements**: @everyone, day and module, codes in inline code, 2–3 sentences, blog link, and a question asking how their session went.
 - **YouTube**: only when there's a video. Title "Hack The Matrix · Day N · Module", description = the Facebook text.
 Credentials live only in ~/.hermes/.env on the server. Never ask for or accept keys or tokens in Discord.
+
+## Videos
+You own rendering, uploading and posting videos. Claude designs the video files; Vic approves.
+- Full instructions: ~/ChooseYourDestiny/shopify/video/VIDEO-HANDOFF.md. Read it before any video job.
+- First job: render "HTM Trailer.html" to MP4, send Vic a frame from 16 s, and on approval upload it to Shopify Files and finish the unpublished blog post "hack-the-matrix-2026-trailer".
+- Never commit MP4s to GitHub. Never publish a post or video without Vic's yes.

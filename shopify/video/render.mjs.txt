@@ -1,0 +1,42 @@
+// Render a CYD video HTML file to MP4, frame by frame.
+// Usage: node shopify/video/render.mjs "shopify/video/HTM Trailer.html" out.mp4 [fps]
+// Needs: npm i -D playwright && npx playwright install --with-deps chromium ; ffmpeg on PATH
+import { chromium } from 'playwright';
+import { spawn } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+
+const [src, out = 'out.mp4', fpsArg = '30'] = process.argv.slice(2);
+if (!src) { console.error('usage: node render.mjs <file.html> <out.mp4> [fps]'); process.exit(1); }
+const fps = +fpsArg;
+
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1080, height: 2100 }, deviceScaleFactor: 1 });
+await page.goto(pathToFileURL(path.resolve(src)).href, { waitUntil: 'networkidle' });
+const sel = '[data-om-exportable-video-with-duration-secs]';
+await page.waitForSelector(sel, { timeout: 60000 });
+await page.evaluate(() => document.fonts.ready);
+await page.waitForTimeout(1500);
+const dur = +(await page.getAttribute(sel, 'data-om-exportable-video-with-duration-secs'));
+const frames = Math.round(dur * fps);
+console.log(`duration ${dur}s, ${frames} frames @ ${fps}fps`);
+const stage = await page.$(sel);
+
+const ff = spawn('ffmpeg', ['-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
+  '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=0x0a0a0a',
+  '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+
+for (let i = 0; i < frames; i++) {
+  const t = i / fps;
+  await page.evaluate(({ sel, t }) => {
+    document.querySelector(sel).dispatchEvent(new CustomEvent('data-om-seek-to-time-frame', { detail: { time: t, sync: true, playing: false } }));
+  }, { sel, t });
+  if (!(await page.getAttribute(sel, 'data-om-sync-seek'))) await page.waitForTimeout(60);
+  const buf = await stage.screenshot({ type: 'png' });
+  if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
+  if (i % (fps * 5) === 0) console.log(`${Math.round(t)}s / ${dur}s`);
+}
+ff.stdin.end();
+await new Promise(r => ff.on('close', r));
+await browser.close();
+console.log('wrote', out);
