@@ -41,5 +41,29 @@ Credentials are in `~/.hermes/.env` (SHOPIFY_STORE + token). Admin GraphQL:
 ## Social
 Follow the Platform posts rules in SOUL.md. YouTube: title "Hack The Matrix 2026 · Trailer", description = the Facebook text. Short-form (Reels/TikTok/Shorts) uses the same MP4. Facebook is still blocked on phone verification. Skip it until Vic says it's connected.
 
+## Brand look (read before touching any video file)
+Claude designs videos. Hermes may only make **small edits** (a date, a price, a word of copy, swapping a wallpaper) and must follow these rules. Anything bigger (new scenes, new layout, new motion, new colors, new fonts) goes to Claude.
+
+**Two looks. Don't mix them in one video.**
+- **Hack The Matrix** (class, codes, Dayplanner, trailer): black `#0a0a0a`, code green `#39d353`, mint `#c8f7d2` for secondary text, white `#ffffff`. Fonts: Inter 800–900 in capitals with wide letter-spacing for headlines, Inter 500–600 for body, Cormorant Garamond italic for quotes only.
+- **Choose Your Destiny main brand** (sessions, readings, subliminals, general posts): black `#0a0a0a` and white, gold `#f0c93e` as the accent (light gold `#ffe774`, deep gold `#c9a11f`), indigo `#2c1fa8` as a second accent, used sparingly. Fonts: Inter for text, Cormorant Garamond for mystical/quote lines. Creepster only for rare spooky display headings, never for body.
+
+**Always**
+- Stark contrast: light text on black, or black on white. No low-contrast grey text on photos. Put a dark gradient behind any text that sits on a wallpaper.
+- Square corners, solid 2–4 px borders. No rounded pill buttons, drop-shadow glows or rainbow gradients.
+- Use the real logo files from `assets/` (`wordmark-white.png`, `wordmark-black.png`, `logo-mark.png`). Never retype the "Choose Your Destiny" wordmark in a font.
+- Use only artwork already in the repo (book wallpapers in `shopify/wallpapers/`, `assets/`). No stock photos, no AI images, no emoji.
+- Keep Vic's copy word for word. Service names are exact: "Hack The Matrix Class (I will teach you how to effectively use -The Metaphysical Dayplanner-)".
+- Prices and dates must match the site: sessions $60/hr (was $100) through January 1, 2027; Hack The Matrix course $33; Deluxe Edition book $49.99. Check the live product before posting a price.
+- Vertical 1080×1920, 30 fps. Text stays inside the safe area: 120 px from top and 260 px from bottom (Reels/TikTok UI covers those).
+- Headlines at least 64 px, body at least 40 px at 1080 wide.
+
+**Never**
+- Change the palette, fonts or motion style of an existing video.
+- Edit the engine code in a video HTML (the `animations-v3.jsx` / `tweaks-panel.jsx` blocks).
+- Post anything without sending Vic a frame and getting a yes.
+
+After any edit, render a frame from each scene you changed and send it to Vic with a one-line note of what changed.
+
 ## New videos
 When Vic wants a new video, Claude builds it as `shopify/video/<Name>.html` and pushes it through Vic. Hermes renders it with the same command, changing the file name. Every video must be vertical 1080×1920 unless Vic says otherwise.

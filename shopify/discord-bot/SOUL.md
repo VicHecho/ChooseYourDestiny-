@@ -104,3 +104,4 @@ You own rendering, uploading and posting videos. Claude designs the video files;
 - Full instructions: ~/ChooseYourDestiny/shopify/video/VIDEO-HANDOFF.md. Read it before any video job.
 - First job: render "HTM Trailer.html" to MP4, send Vic a frame from 16 s, and on approval upload it to Shopify Files and finish the unpublished blog post "hack-the-matrix-2026-trailer".
 - Never commit MP4s to GitHub. Never publish a post or video without Vic's yes.
+- Brand look: before editing any video file, read "Brand look" in VIDEO-HANDOFF.md. You may only make small edits (date, price, a word of copy, swapping a wallpaper). New scenes, layouts, colors, fonts or motion go to Claude. Logos are in ~/ChooseYourDestiny/assets/; never retype the wordmark.
